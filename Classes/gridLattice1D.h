@@ -3,14 +3,13 @@
 #include <iostream>
 #include <sstream>
 
-// boost include
-//#include <boost/cast.hpp>
+// boost include 
+#include <boost/cast.hpp> // numeric cast
 
 namespace vsc19 
 {
 	/**
-	 * @brief class GridLattice1D describes the domain
-				  the PDE will be applied to
+	 * @brief class GridLattice1D describes the domain the PDE will be applied to
 	 */
 	class gridLattice1D
 	{
@@ -109,7 +108,7 @@ namespace vsc19
 
 		// get the total number of points in the grid.
 		int getNoPoints() const { return m_noPts; }
-		double Delta() const { return ( m_xmax - m_xmin)/static_cast<double>(m_division);}
+		double Delta() const; //{ return ( m_xmax - m_xmin)/static_cast<double>(m_division);}
 		double getPoint(int index) { return 0.; }
 
 		int getBase() const { return 0; }			// get base values
@@ -237,23 +236,23 @@ namespace vsc19
 		int m_division; /**< number of points*/
 	};
 
-//	inline double gridLattice1D::Delta() const
-//	{
-		// using boost::numeric_cast;
-		// using boost::numeric::bad_numeric_cast;
-		// using boost::numeric::negative_overflow;
-		// using boost::numeric::positive_overflow;
+	inline double gridLattice1D::Delta() const
+	{
+		using boost::numeric_cast;
+		using boost::numeric::bad_numeric_cast;
+		using boost::numeric::negative_overflow;
+		using boost::numeric::positive_overflow;
 
 		//return (max[dimension-1] - min[dimension-1])/double(division[dimension-1]);
 
 		// return first dimension parameter as default
-	//	try
-	//	{
+		try
+		{
 			// try numerical cast and catch
 		//	 if (dimension<1||dimension>MAX_DIMENSIONS)
 		//	 {
 			   // default value ...
-		//	    return (m_max.first - m_min.first)/numeric_cast<double>(m_division.first);
+		    return (m_xmax - m_xmin)/numeric_cast<double>(m_division);
 		//	}
 			// ...
 			//		if (dimension==1)
@@ -264,12 +263,12 @@ namespace vsc19
 			// {
 	//		 	return (m_max.second - m_min.second)/static_cast<double>(m_division.second);
 			// }
-	//	}
-		// catch (bad_numeric_cast &bc)
-		// {
-		// 	std::cerr << bc.what() << "\n";
-		// 	return 0.;
-		// }
+		}
+		catch( bad_numeric_cast &bc)
+		{
+		 	std::cerr << bc.what() << "\n";
+		 	return 0.;
+		}
 	//	return 0.;
-//	}
+	}
 } // End of namespace

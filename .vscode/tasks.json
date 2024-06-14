@@ -12,10 +12,11 @@
                 "/Zi",
                 "/EHsc",
                 "-std:c++20",
-                "/I: E:/Boost/boost-1_82/**",
                 "${workspaceFolder}\\*.cpp",
                 "${workspaceFolder}\\Classes\\*.cpp",
-                "${workspaceFolder}\\TestCPP17\\*.cpp"
+                "${workspaceFolder}\\TestCPP17\\*.cpp",
+                "-IE:/boost/boost_1_82_0",
+                "/Fo:${workspaceFolder}\\obj\\"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -25,11 +26,16 @@
             ]
         },
         {
+            "label": "echo",
+            "type": "shell",
+            "command": "echo ${fileDirname}"
+        },
+        {
             "label": "Linker",
             "type": "shell",
             "command": "cl.exe",
             "args": [
-                "${workspaceFolder}\\*.obj",
+                "${workspaceFolder}\\obj\\*.obj",
                 "/Fe:${workspaceFolder}\\TestVS19main"
             ]          
         },

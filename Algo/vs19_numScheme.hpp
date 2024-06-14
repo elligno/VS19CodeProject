@@ -2,12 +2,13 @@
 
 #include <iostream>
 #include <type_traits> // 
+#include <format> //C++20 feature
 // STL numerical container
 #include <valarray>
 #include <numeric>
 #include <array>
 #include <algorithm>
-#include <ranges>   // C++20 features
+#include <ranges>   // C++20 feature
 // ... to be cpompleted
 #include "../Template17/vs19_myFirstRng.hpp"
 #include "../Classes/vs19_MinMod.hpp"
@@ -16,6 +17,34 @@
 #include "../vs19_AppConstant.hpp"
 //#include "../TestCPP17/vs19_NumericalSourceTerms.h" // numerical source terms 
 
+/**
+   * @brief coming ...
+   * @tparam Callable 
+   * @tparam ...Args 
+   * @param aCalbl 
+   * @param ...arg 
+  */
+  template<typename Callable, typename ...Args>
+  decltype(auto) call( Callable&& aCalbl, Args&&... args)
+  {
+    std::invoke( std::forward<Callable>(aCalbl), // call passed to callable with 
+      std::forward<Args>(args)...);              // all additional passed args
+  }
+
+ template<typename T>
+  concept IsPointer = std::is_pointer_v<T>;
+
+  template<typename T, auto N=101>
+  requires(IsPointer<T>)
+    void hllSchemeWithPtr( T aU1, T aU2, T aFF1, T aFF2) // E. McNeil version
+    {
+      static_assert( N == vsc19::EMCNEILNbSections::value);
+    
+      // do some numerical stuff (for examp[le E. McNeil function-ptr])
+      // by using "call" function above (did some stuff like that in May24)
+      // 
+    }
+
 namespace vsc19 
 {
  /* template <typename T>
@@ -23,7 +52,7 @@ namespace vsc19
     typename T::allocator_type>>;*/
 
   /**
-   * @brief 
+   * @brief C++17 new feature (invoke)
    * @tparam Callable 
    * @tparam ...Args 
    * @param aCalbl 
@@ -137,26 +166,37 @@ namespace vsc19
 
   // Numerical algorithm using default values for function template parameters 
   // Could be boost::ublas fast floating container 
-  template< typename ArrayType, 
-    auto NbSections = vsc19::EMCNEILNbSections::value>
+
+   /**
+   * @brief Numerical algorithm using default values for function template parameters
+   * @tparam Args range of values 
+   * @tparam Args range of values 
+   * @tparam Args flux face values (in/out)
+   * @tparam Args flux face values (in/out)
+   * @return nothing 
+  */
+  template< typename ArrayType, // numerial array for fast floating-point operation
+    auto NbSections = vsc19::EMCNEILNbSections::value> // default size for prototyping
   void hllFluxAlgorithm(        ArrayType& aFF1,      ArrayType& aFF2, // face flux
                          const  ArrayType& aU1, const ArrayType& aU2) noexcept // ?? not sure
   {
     // C++20 range concept and compile-time if  (if with initializatoion and follow by condition C++17)
     if constexpr ( range_t<ArrayType> numrng; !std::ranges::range<decltype(numrng)>) // condition if it is a range
     {
+      // std::ranges::distance(); just check
+      using sect_sizet = decltype(NbSections);
+      using arr_valuetype = ArrayType::value_type; // before C++20 need "typename ArrayType::value_type"
+
       static_assert( std::size(ArrayType) == NbSections);
       std::cout << "numrng is not a range with exact value\n";
+
+      // difference type for the specified range's iterator
+      // range_difference_t<ArrayType>; //??
+      // distance
+      auto rngFF1Dist = std::ranges::distance(aFF1);
+
+      std::cout << "E. McNeil size value\n";
     }
-
-    // std::ranges::distance(); just check
-    using sect_sizet = decltype(NbSections);
-    using arr_valuetype = typename ArrayType::value_type;
-
-    // difference type for the specified range's iterator
-    //range_difference_t<ArrayType>; //?? 
-    // distance
-    auto rngFF1Dist = std::ranges::distance(aFF1);
 
     // aU over global domain (include ghost node)
   //  static_assert( std::size(aFF1) == NbSections - 1);         //<< "Face Flux and global U array incompatible";
