@@ -12,11 +12,13 @@
     },
     "configurations": [
         {
-            "name": "Win32",
+            "name": "win32",
             "includePath": [
                 "${myIncludePath}",
                 "${workspaceFolder}**",
                 "E:/Boost/boost_1_82_0/",
+                "E:/JeanProjects/JeanSlnVS19/BaseNumericalTypes",
+                "E:/JeanProjects/JeanSlnVS19/SfxBase19",
                 "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt"
             ],
             "defines": [
@@ -32,8 +34,39 @@
             "browse": {
                 "path": [
                     "${workspaceFolder}**",
-                    "E:/Boost/boost_1_82_0/**"
+                    "E:/Boost/boost_1_82_0/**",
+                    "E:/JeanProjects/JeanSlnVS19/SfxBase19/**",
+                    "E:/JeanProjects/JeanSlnVS19/BaseNumericalTypes/**"
                 ]
+            }
+        },
+        {
+            "name": "x64",
+            "includePath": [
+                "e:/JeanProjects/TestVS2019/**",
+                "${workspaceFolder}**",
+                "E:/Boost/boost_1_82_0/",
+                "E:/JeanProjects/JeanSlnVS19/BaseNumericalTypes",
+                "E:/JeanProjects/JeanSlnVS19/SfxBase19",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.18362.0",
+            "compilerPath": "cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-msvc-x64",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "e:/JeanProjects/TestVS2019/**",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
             }
         }
     ],

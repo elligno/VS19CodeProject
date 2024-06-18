@@ -17,6 +17,7 @@
 #include "../vs19_AppConstant.hpp"
 //#include "../TestCPP17/vs19_NumericalSourceTerms.h" // numerical source terms 
 
+#if 0 // code is duplicated
 /**
    * @brief coming ...
    * @tparam Callable 
@@ -44,6 +45,7 @@
       // by using "call" function above (did some stuff like that in May24)
       // 
     }
+#endif 
 
 namespace vsc19 
 {
@@ -125,7 +127,6 @@ namespace vsc19
     //if(std::is_const_v)
   }
 
-  
   // Usage:
   // compute dU1,dU2 minmod, don't need it anymore
   // allocate memory for aFF1, aFF2 
@@ -187,7 +188,7 @@ namespace vsc19
       using sect_sizet = decltype(NbSections);
       using arr_valuetype = ArrayType::value_type; // before C++20 need "typename ArrayType::value_type"
 
-      static_assert( std::size(ArrayType) == NbSections);
+      static_assert( std::size(ArrayType) == NbSections, "Array Size not equal to EMcNeil data");
       std::cout << "numrng is not a range with exact value\n";
 
       // difference type for the specified range's iterator

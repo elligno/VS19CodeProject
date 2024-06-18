@@ -16,7 +16,11 @@
                 "${workspaceFolder}\\Classes\\*.cpp",
                 "${workspaceFolder}\\TestCPP17\\*.cpp",
                 "-IE:/boost/boost_1_82_0",
-                "/Fo:${workspaceFolder}\\obj\\"
+                "-IE:/JeanProjects/JeanSlnVS19/SfxBase19",
+                "-IE:/JeanProjects/JeanSlnVS19/BaseNumericalTypes",
+                "/Fo:${workspaceFolder}\\obj\\",
+                "/link",
+                "${workspaceFolder}\\bin\\BaseNumericalTypes.lib"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -28,7 +32,7 @@
         {
             "label": "echo",
             "type": "shell",
-            "command": "echo ${fileDirname}"
+            "command": "echo ${workspaceFolder}"
         },
         {
             "label": "Linker",
@@ -36,6 +40,8 @@
             "command": "cl.exe",
             "args": [
                 "${workspaceFolder}\\obj\\*.obj",
+                "/link",
+                "${workspaceFolder}\\bin\\BaseNumericalTypes.lib",
                 "/Fe:${workspaceFolder}\\TestVS19main"
             ]          
         },
