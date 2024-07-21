@@ -11,6 +11,7 @@
             "args": [
                 "/Zi",
                 "/EHsc",
+                "/MT",
                 "-std:c++20",
                 "${workspaceFolder}\\*.cpp",
                 "${workspaceFolder}\\Classes\\*.cpp",

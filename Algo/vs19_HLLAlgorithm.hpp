@@ -126,14 +126,14 @@ namespace Sfx
 		auto w_dU2Shifted = dU2.shift(1);  // circular shift (shifted element at the end with element T{})
 
 		// last global discretization node (ghost node) overwrite
-		w_dU1Shifted[aU1.size() - 1] = aMinModSlopeLimiter(0., aU1[aU1.size() - 1] - aU1[aU1.size() - 2]);  // i+1/2
-		w_dU2Shifted[aU2.size() - 1] = aMinModSlopeLimiter(0., aU2[aU2.size() - 1] - aU2[aU2.size() - 2]);  // i+1/2
+		w_dU1Shifted[aU1.size() - 1] = aMinModSlopeLimiter(0., aU1[aU1.size() - 1] - aU1[aU1.size() - 2]);  // [i+1-i,i-i-1] stencil
+		w_dU2Shifted[aU2.size() - 1] = aMinModSlopeLimiter(0., aU2[aU2.size() - 1] - aU2[aU2.size() - 2]);  // [i+1-i,i-i-1] stencil
 
 		// don't need anymore of shifted array, might as well move it 
 		w_dU1 = std::move(w_dU1Shifted); // move semantic supported by valarray
 		w_dU2 = std::move(w_dU2Shifted);
 
-		//	Calculs préalables: évaluation des éléments du vecteur dU
+		//	Calculs prï¿½alables: ï¿½valuation des ï¿½lï¿½ments du vecteur dU
 		// Boundary point: i = 0
 		//dU1[0] = Sfx::minmod(aU1[1] - aU1[0], 0.);  // std::bind2nd(ptr_fun(minmod)  
 		//dU2[0] = Sfx::minmod(aU2[1] - aU2[0], 0.);
@@ -189,7 +189,7 @@ namespace Sfx
 		const auto CR = ::sqrt(g * UR1 /*/ hyd::SectionWidth{}*/);
 		const auto CL = ::sqrt(g * UL1 /*/ hyd::SectionWidth{}*/);
 
-		// Étape intermédiaire: calcul de US et CS
+		// ï¿½tape intermï¿½diaire: calcul de US et CS
 		const auto CS = 0.5 * (CL + CR) - 0.25 * (uL - uR);
 		const auto uS = 0.5 * (uL - uR) + CL - CR;
 
@@ -257,7 +257,7 @@ namespace Sfx
 			const auto CR = ::sqrt(g * UR1[i + 1] / wT());
 			const auto CL = ::sqrt(g * UL1[i] / wT());
 
-			//	Une attention particulière devra être ici portée sur
+			//	Une attention particuliï¿½re devra ï¿½tre ici portï¿½e sur
 			//	les signes (+/-) relativement au produit scalaire avec
 			//	Si+1/2
 
@@ -270,7 +270,7 @@ namespace Sfx
 			// NOTE i have the article for this algorithm with all formulas
 			// i will double check and make the fix if any hs to be done
 
-			// Étape intermédiaire: calcul de US et CS
+			// ï¿½tape intermï¿½diaire: calcul de US et CS
 			const auto CS = 0.5 * (CL + CR) - 0.25 * (uL - uR);
 			const auto uS = 0.5 * (uL - uR) + CL - CR;
 
@@ -325,7 +325,7 @@ namespace Sfx
 
 		Sfx::MinMod<double> w_minmod{};
 
-		//	Calculs préalables: évaluation des éléments du vecteur dU
+		//	Calculs prï¿½alables: ï¿½valuation des ï¿½lï¿½ments du vecteur dU
 		// Boundary point: i = 0
 		dU1[0] = w_minmod( aU1[1] - aU1[0], 0.);  
 		dU2[0] = w_minmod( aU2[1] - aU2[0], 0.);
@@ -433,7 +433,7 @@ namespace Sfx
 //			const auto CR = ::sqrt( g*UR1[i + 1]/wT());
 //			const auto CL = ::sqrt( g*UL1[i]/wT());
 
-			//	Une attention particulière devra être ici portée sur
+			//	Une attention particuliï¿½re devra ï¿½tre ici portï¿½e sur
 			//	les signes (+/-) relativement au produit scalaire avec
 			//	Si+1/2
 
@@ -446,7 +446,7 @@ namespace Sfx
 			// NOTE i have the article for this algorithm with all formulas
 			// i will double check and make the fix if any hs to be done
 
-			// Étape intermédiaire: calcul de US et CS
+			// ï¿½tape intermï¿½diaire: calcul de US et CS
 		const auto CS = 0.5 * (CL + CR) - 0.25 * (uL - uR);
 		const auto uS = 0.5 * (uL - uR) + CL - CR;
 

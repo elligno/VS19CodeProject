@@ -80,7 +80,7 @@ namespace vsc19
   // In our programming environment we could use this kind of signature??? 
   // can call it with (ArrayType aU, double dx, int nbSections)
   template<typename NumArray, typename... Types> //to be completed
-  void numSchemeVariadic( NumArray&& aNumArray, Types... args)  // not sure about that signature!!  
+  void numSchemeVariadic( NumArray&& aNumArray, Types... args) 
   {
     // just a test VS15 it don't work
     MinMod<double> w_myMinMod{};
@@ -88,7 +88,7 @@ namespace vsc19
     // C++20 range concept and compile-time if  (if with initializatoion and follow by condition C++17)
     if constexpr( range_t<NumArray> numrng; std::ranges::range<decltype(numrng)>) // condition if it is a range
     { 
-      static_assert( std::size(NumArray) == 101);
+      static_assert( std::size(NumArray) == vsc19::EMCNEILNbSections::value);
       std::cout << "rng is a range with exact value\n";
     }
 
@@ -132,8 +132,8 @@ namespace vsc19
   // allocate memory for aFF1, aFF2 
   //  hllFluxAlgorithm<double>()
   template<typename T, typename ArrayType = std::valarray<T>>
-  void hllFluxAlgorithm(       ArrayType& aFF1, ArrayType& aFF2,          // return 
-                         const ArrayType& aU1, const ArrayType& aU2,      // in 
+  void hllFluxAlgorithm(       ArrayType& aFF1, ArrayType& aFF2,          // return lvalue reference
+                         const ArrayType& aU1, const ArrayType& aU2,      // in (glvalue)
                                ArrayType&& dU1, ArrayType&& dU2) noexcept // don't need it anymore (forward reference)
   {
     std::cout << "Debugging purpose\n";
@@ -181,7 +181,7 @@ namespace vsc19
   void hllFluxAlgorithm(        ArrayType& aFF1,      ArrayType& aFF2, // face flux
                          const  ArrayType& aU1, const ArrayType& aU2) noexcept // ?? not sure
   {
-    // C++20 range concept and compile-time if  (if with initializatoion and follow by condition C++17)
+    // C++20 range concept and compile-time if  (if with initialization and follow by condition C++17)
     if constexpr ( range_t<ArrayType> numrng; !std::ranges::range<decltype(numrng)>) // condition if it is a range
     {
       // std::ranges::distance(); just check

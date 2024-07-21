@@ -1,4 +1,6 @@
 
+#pragma once
+
 // C++ includes
 #include <iostream>
 #include <sstream>
@@ -9,7 +11,7 @@
 namespace vsc19 
 {
 	/**
-	 * @brief class GridLattice1D describes the domain the PDE will be applied to
+	 * @brief class GridLattice1D describes the domain the PDE will be applied to.
 	 */
 	class gridLattice1D
 	{
@@ -30,16 +32,17 @@ namespace vsc19
 		 * initialize the grid with the following syntax:
 		 * d=2 [0,1]x[0,10] [1:30]x[1:300] -> [xmin,xmax] [0:99]
 		 * @param aInitStr
+		 * Usage std::string{d=1 [0,1] [1:30]} in one-dimension
 		 */
-		gridLattice1D(std::string &&aInitStr)
-			: m_xmin{},
-			  m_xmax{},
-			  m_division{},
-			  m_noPts{}
+		gridLattice1D(std::string&& aInitStr) //rvalue reference
+		: m_xmin{},
+		  m_xmax{},
+		//  m_noPts{},
+		  m_division{}
 		{
 			//just testing!! really not sure about this one!!
 			//should i call std::move(aInitStr)
-		    scan(aInitStr);
+		   // scan(aInitStr); don't work
 
 			// do some reading format
 			using namespace std; // allows dropping std:: prefix
@@ -47,8 +50,9 @@ namespace vsc19
 			// istrstream is used, although it is deprecated in ISO/IEC
 			// 14882:1998(E). however, G++ does not yet support istringstream,
 			// so istrstream is used instead.
-			istringstream is(aInitStr.c_str());
-
+			//istringstream is(aInitStr.c_str());
+            istringstream is{std::move(aInitStr).c_str()};
+            
 			int dimensions{};
 
 			is.ignore(1, 'd');
@@ -64,7 +68,7 @@ namespace vsc19
 			is.ignore(1, ' ');
 			is.ignore(1, '[');
 
-			double r;
+			double r{};
 			is >> r;
 			m_xmin = r;
 			is.ignore(1, ',');
@@ -79,7 +83,7 @@ namespace vsc19
 
 			int base;
 			is >> base;
-			if (base != 1)
+			if (base != 1) //NOTE
 			{
 				std::cout << "base=" << base
 						  << " not allowed yet (only 1 works)\n";
@@ -96,23 +100,28 @@ namespace vsc19
 		// ctor from parameters (not used at the moment in our programming environment)
 		gridLattice1D(int nx, double xmin, double xmax)
 		: m_xmin{xmin},
-			  m_xmax{xmax},
-			  m_noPts{nx}
+		  m_xmax{xmax},
+	//	  m_noPts{nx},
+		  m_division{nx}
 		{
 		}
 
-		int getNoSpaceDim() const { return 1; }
+		int getNoSpaceDim() const { return 1; } // for this implementation
 
 		double xMin() const { return m_xmin; }
 		double xMax() const { return m_xmax; }
 
 		// get the total number of points in the grid.
-		int getNoPoints() const { return m_noPts; }
+		int getNoPoints() const { return m_division; }
 		double Delta() const; //{ return ( m_xmax - m_xmin)/static_cast<double>(m_division);}
-		double getPoint(int index) { return 0.; }
-
+		double getPoint( int index) // not sure about this one!
+		{
+			// if pass index from 1,...,N this is correct
+			 return m_xmin + (Delta() * (index - 1)); 
+	    } 
+        // using with std container such as valarray (index start at 0 and end at size-1)
 		int getBase() const { return 0; }			// get base values
-		int getMaxI() const { return m_noPts - 1; } // upper limit of array
+		int getMaxI() const { return m_division - 1; } // upper limit of array
 
 		// must be private, access denied to client
 		// scan parameters from string
@@ -122,14 +131,14 @@ namespace vsc19
 		// NOTE:
 		//  std::istringstream is now supported with VS2015
 		//
-		void scan(std::string_view init_string)
+		void scan( std::string_view init_string)
 		{
 			using namespace std; // allows dropping std:: prefix
 
 			// istrstream is used, although it is deprecated in ISO/IEC
 			// 14882:1998(E). however, G++ does not yet support istringstream,
 			// so istrstream is used instead.
-			if (nullptr == init_string.data())
+			if( nullptr == init_string.data())
 			{
 				cerr << "gridLattice1D::scan() -- nullptr init_string " << "\n";
 			}
@@ -209,7 +218,7 @@ namespace vsc19
 		int getDivisions() const { return m_division; }
 
 		// access to private member
-		friend std::ostream &operator<<(std::ostream &os, gridLattice1D &aGrid)
+		friend std::ostream &operator<<( std::ostream &os, gridLattice1D &aGrid)
 		{
 			auto dimensions = 1;
 			// write out the grid in the same syntax as scan reads it:
@@ -232,7 +241,7 @@ namespace vsc19
 	private:
 		double m_xmin;	/**< minimum x coordinate*/
 		double m_xmax;	/**< maximum x coordinate*/
-		int m_noPts;	/**< ... grid*/
+//		int m_noPts;	/**< grid number of nodes*/
 		int m_division; /**< number of points*/
 	};
 

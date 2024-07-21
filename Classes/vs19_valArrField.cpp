@@ -5,7 +5,7 @@ namespace vsc19
 {
   valArrField::valArrField( const std::shared_ptr<GridLattice>& aGridField, std::string aName)
   : m_name{ std::move(aName) },  // best solution, don't use string-view
-		m_gridLattice{ aGridField }
+	m_gridLattice{ aGridField }
   {
 
 		// allocate the grid_point_values array:
@@ -15,7 +15,7 @@ namespace vsc19
 
 	valArrField::valArrField( const std::shared_ptr<GridLattice>& aGrid, std::string aName, double aValue)
 	: m_name{ std::move(aName) },  // best solution, don't use string-view
-		m_gridLattice{ aGrid }
+	  m_gridLattice{ aGrid }
 	{
 		// allocate the grid_point_values array:
 		if (m_gridLattice->getNoSpaceDim() == 1)
@@ -24,7 +24,7 @@ namespace vsc19
 	valArrField::valArrField( const std::shared_ptr<GridLattice>& aGrid, std::string aName, 
 		const std::vector<double>& aValue)
 	: m_name{ std::move(aName) },  // best solution, don't use string-view
-		m_gridLattice{ aGrid }
+	  m_gridLattice{ aGrid }
 	{
 		// allocate the grid_point_values array:
 		if (m_gridLattice->getNoSpaceDim() == 1)
@@ -104,11 +104,10 @@ namespace vsc19
 		return std::move(aRhs);
 	}
 
-	valArrField::iterator valArrField::begin()                      { return std::begin(*m_gridValues); }
-	valArrField::const_iterator valArrField::cbegin() const         { return std::begin(*m_gridValues); }
-	valArrField::iterator valArrField::end()                        { return std::end(*m_gridValues);   }
-	valArrField::const_iterator valArrField::cend() const           { return std::end(*m_gridValues);   }
-	
+	valArrField::iterator valArrField::begin()               { return std::begin(*m_gridValues); }
+	valArrField::const_iterator valArrField::cbegin() const  { return std::begin(*m_gridValues); }
+	valArrField::iterator valArrField::end()                 { return std::end(*m_gridValues);   }
+	valArrField::const_iterator valArrField::cend() const    { return std::end(*m_gridValues);   }
 	valArrField::reverse_iterator valArrField::rbegin()
 	{
 		return reverse_iterator(end());

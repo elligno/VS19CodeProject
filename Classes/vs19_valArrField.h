@@ -56,7 +56,6 @@ namespace vsc19
     const_reverse_iterator rend() const;
     reverse_iterator rend();
 
-
     typedef typename std::iterator_traits<iterator>::value_type value_type;
    // typedef std::bidirectional_iterator<iterator> iterator_category;
    // typedef std::difference_iterator<iterator> difference_type;

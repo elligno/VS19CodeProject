@@ -111,7 +111,7 @@ namespace vsc19
   };
 
   /**
-   * @brief Ensure that any output of any argument is extended by a space 
+   * @brief Ensure that any output of any argument is extended by a space (can be used with fold expression)
    * @tparam T Argument type
   */
   template<typename T>
@@ -159,6 +159,25 @@ namespace vsc19
     return aRng;
   }
 
+  // fold expression (see N. Josuttis chap 14 C++17 The Complete Guide) template function 
+
+// just testing variadic template 
+template<typename ... Params> // parameter pack
+struct jbTpl 
+{
+   std::tuple<Params...> m_tpl; // pack expansion
+};
+
+// pattern creation
+template<typename ... Params>
+struct jbTpl1 {
+   std::tuple<std::string, Params...> m_tplPatrn;
+};
+
+template<typename ... Params>
+struct jbTpl2 {
+   std::tuple<std::unique_ptr<Params> ...> m_tpluniqPtr; // intantiate for each arg in the pack
+};
 #if 0
   // NOTE
 // error generated when compiling because ::fabs is not constexpr in C++20
