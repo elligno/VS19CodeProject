@@ -30,9 +30,10 @@ namespace vsc19
 		 * @brief Construct a new grid Lattice object
 		 *
 		 * initialize the grid with the following syntax:
-		 * d=2 [0,1]x[0,10] [1:30]x[1:300] -> [xmin,xmax] [0:99]
+		 * d=2 [0,1]x[0,10] [1:30]x[1:300] -> [xmin,xmax] [0:99] for std::valarray
+		 * element index goes from 0, N-1 
 		 * @param aInitStr
-		 * Usage std::string{d=1 [0,1] [1:30]} in one-dimension
+		 * Usage std::string{d=1 [0,1] [0:N-1]} in one-dimension for valarray
 		 */
 		gridLattice1D(std::string&& aInitStr) //rvalue reference
 		: m_xmin{},
@@ -83,7 +84,7 @@ namespace vsc19
 
 			int base;
 			is >> base;
-			if (base != 1) //NOTE
+			if (base != 0) //NOTE index for std valarray
 			{
 				std::cout << "base=" << base
 						  << " not allowed yet (only 1 works)\n";

@@ -5,12 +5,13 @@
 #include <iostream>
 #include <optional>
 #include <charconv>    // from_char
-
+// STL include
+#include <algorithm>
 #include <string_view> // ...
 //#include <type_traits>  std::decay
 
 // Base Types package 
-#include "vs19_MinMod.hpp"
+//#include "vs19_MinMod.hpp"
 
 namespace vsc19 
 {
@@ -21,6 +22,7 @@ namespace vsc19
   */
   inline std::optional<int> toInt( std::string_view aStrv)
   {
+    // NOTE string_view cheap to copy, pass-by-value
     int val {}; // init to 0
 
     // Return a struct 'from_char_results' value and error code
@@ -159,25 +161,126 @@ namespace vsc19
     return aRng;
   }
 
-  // fold expression (see N. Josuttis chap 14 C++17 The Complete Guide) template function 
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++
+  // fold expression (see N. Josuttis chap 14 C++17 The Complete Guide) template function
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+  // just testing variadic template
+  template <typename... Params> // parameter pack
+  struct jbTpl
+  {
+    std::tuple<Params...> m_tpl; // pack expansion
+  };
 
-// just testing variadic template 
-template<typename ... Params> // parameter pack
-struct jbTpl 
+  // pattern creation
+  template <typename... Params>
+  struct jbTpl1
+  {
+    std::tuple<std::string, Params...> m_tplPatrn;
+  };
+
+  template <typename... Params>
+  struct jbTpl2
+  {
+    std::tuple<std::unique_ptr<Params>...> m_tpluniqPtr; // intantiate for each arg in the pack
+  };
+
+// Pattern is the following:
+// if the parameter pack contains types: int, float,int
+// pair<string,int>, pair<string,float>, pair<string,int> result
+// tuple<pair<string,int>, pair<string,float>, pair<string,int>>
+template<typename... Prms>
+struct TestTplPtrn
 {
-   std::tuple<Params...> m_tpl; // pack expansion
+  // create a pattern base on the pack expansion
+  std::tuple<std::pair<std::string,Prms>...> m_tplPrmsPtrn;
 };
 
-// pattern creation
-template<typename ... Params>
-struct jbTpl1 {
-   std::tuple<std::string, Params...> m_tplPatrn;
-};
+// let compiler deduce the return type
+template<typename... Ts>
+auto createPairTpl() // not sure about this one!!!
+{
+  // not sure about this one
+  return make_tuple(TestTplPtrn<Ts...>);
+}
 
-template<typename ... Params>
-struct jbTpl2 {
-   std::tuple<std::unique_ptr<Params> ...> m_tpluniqPtr; // intantiate for each arg in the pack
-};
+#if 0
+// Using fold expression
+// Note this could be done in a more comppact form
+template<typename First, typename... Args>
+void printWithSpace( const First& aFirstElem, const Args&... arg) 
+{
+  std::cout << aFirstElem; // print first element
+  // NOTE by default lambda return objects by value. This mean
+  // create an unnecessary copy of the arg. The way to avoid that
+  // is to explcitly declare the return type of the lambda as to be 
+  // const auto& or decltype(auto).
+  addSpaceBefore = [] ( const Args& aArg) -> decltype(auto)
+  {
+    std:: cout << " "; // add a space before print arg
+    return aArg; // return arg to be print 
+  };
+
+  // operator << apply to fold expression
+  (std::cout << ... << addSpaceBefore(arg)) << '\n';
+}
+#endif
+
+// NOTE by default lambda return objects by value. This mean
+   // create an unnecessary copy of the arg. The way to avoid that
+   // is to explcitly declare the return type of the lambda as to be 
+   // const auto& or decltype(auto).
+template<typename First, typename ...Args>
+void printAddspace10( const First& aFirstElem, const Args& ...args) 
+{
+  std::cout <<  aFirstElem;
+  // avoid unnecessary copy of 'aArg' since lambda return objects by value (default)
+  (std::cout << ... << [] (const Args& aArg) -> decltype(auto) 
+  {
+     std::cout << ' ';
+     return aArg;
+  }(args)) << '\n';
+}
+
+// is that make sense? kind of factory based on perfect-forwarding
+template<typename T, typename... Args>
+std::shared_ptr<T> factoryCreator(const Args&&... args)
+{
+  return std::shared_ptr<T>{ new T {std::forward<T>(args...)}};
+}
+
+/**
+ * @brief Comparison of two characters.
+ * @tparam T character type
+ * @param a a character
+ * @param b a character to compare with
+ * @return succeed if both char sequence are identical
+*/
+	template<typename T, std::size_t N, std::size_t M> // could we use auto inxstead of size_t?
+		//typename = std::enable_if_t<std::is_same_v<T, char>>>
+	requires std::is_same_v<T, char>
+		std::optional<int> id17( const T(&a)[N], const T(&b)[M])  // arguument deduction (decay??) N. Josuttis "C++17 The Complete Guide" 
+	{                                                           // instead of using T* not sure about it (size must be equal)
+		int i {};   // initialization (default ctor is called initialization)
+
+	//	int m = 1;
+		while (a[i] != '\0' || b[i] != '\0') {  // until the end of the word
+			if (a[i] != b[i]) {                   // check character equality
+				//m = 0; break;                     ... original code
+				return std::nullopt;
+			}
+			++i;
+		}//while-loop
+
+		//return std::make_optional<int>(std::nullopt);
+		return std::make_optional(1);
+	}
+
+// using another feature of cC++17 is auto keyword in template parameter
+// another example using auto as template parameter
+//template<auto sep=" ", typename First, template ...Args>
+//void printAddspace10() {}
+
 #if 0
   // NOTE
 // error generated when compiling because ::fabs is not constexpr in C++20

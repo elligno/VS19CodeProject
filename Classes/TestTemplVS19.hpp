@@ -2,10 +2,10 @@
 #pragma once
 
 // C++ includes
+#include <cassert>
 #include <iostream>
-
+// C++20 inc;lude
 #include <ranges>  // C++20 ranges
-
 // STL includes
 #include <numeric>
 #include <vector>
@@ -13,8 +13,24 @@
 // App include
 #include "vs19_valArrField.h"
 
+namespace vs19 // forward declaration
+{
+    void TreatmentSource2( std::vector<double>& aS, 
+      std::vector<double>&& aQ, std::vector<double>&& aA, std::vector<double>&& aH, //rvalue reference
+      const std::vector<double> &n,  double aDx /*= 10.*/, unsigned aNbSections /*= 101*/);
+
+      void TraitementTermeSource2( std::vector<double> &S, const std::vector<double> &Q,
+      const std::vector<double> &A, const std::vector<double> &H,
+      const std::vector<double> &n, const double dx, const int NbSections,
+      double B /*=1*/);
+
+     //  void foo( const std::vector<int>& aVecInt);
+     //  void foo( std::vector<int>& aVecInt);
+}
+
 namespace vsc19 {
-  
+
+#if 1
   // C++17 
   // glvalue, bind to everything (mutable, unmutable, lvalue, ...) 
   void foo( const std::vector<int>& aVecInt)
@@ -33,10 +49,11 @@ namespace vsc19 {
   {
     std::cout << "Calling reference signature\n";
   }
+#endif
 
   // forward reference (perfect forwarding)
   template <typename T>
-  void call2Foo( T&& aType) 
+  void call2Foo( T&& aType) // Universal reference
   {
     // generic lambda (C++20) perfect forwarding with lambda
     auto callFoo = []<typename T>( T&& aType2Call)
@@ -55,84 +72,123 @@ namespace vsc19 {
       callFoo(aType); // might as well to call out generic lambda
     }
 
-    //d=1 [0,1]x[0,10] NO!!NO!! number of grid node can't be from 0 to N
+    std::cout << "Do whatever\n";
+  }
+
+   // testing some
+  template <typename Range /*Numeric range*/>
+  void numericalSchemeRef(const Range &aRange)
+  {
+    // some basic check before proceeding
+    static_assert(std::is_same_v<decltype(aRange), const vsc19::valArrField &>);
+
+    // d=1 [0,1]x[0,10] NO!!NO!! number of grid node can't be from 0 to N
     // must be set to a valid range [1,N]
-   // vsc19::gridLattice1D w_grid1D{std::string {"d=1 [0,1]x[1:10]"} };
-  //  const auto dx = w_grid1D.Delta();
-    
-    //auto w_gr1d = std::make_shared<vsc19::gridLattice1D>(std::string {"d=1 [0,1]x[1:10]"}); 
-   // vsc19::scalarField1D w_fieldLattice{w_gr1d, std::string{"Field Lattice"}};
-    
-    vsc19::valArrField::gridlatticeptr w_aa{new vsc19::GridLattice{5,0.,1.}};
-    vsc19::valArrField w_newField{w_aa, std::string{"Jean Test"},2.3};
+    // vsc19::gridLattice1D w_grid1D{std::string {"d=1 [0,1]x[1:10]"} };
+    //  const auto dx = w_grid1D.Delta();
 
-    auto dimm = w_newField.grid().getNoSpaceDim();
-    auto min = w_newField.grid().xMin(1);
-    auto max = w_newField.grid().xMax(1);
-    auto nbPts = w_newField.grid().getNoPoints();
-    auto div = w_newField.grid().getDivisions(1);
+    vsc19::valArrField::gridlatticeptr w_aa{new vsc19::GridLattice{5, 0., 1.}}; // 5 nodes from xmin=0. to xmax=1.
+    vsc19::valArrField w_newField{w_aa, std::string{"Jean Test"}, 2.3}; // initialize field with value
 
-    const auto& val = w_newField.values();
+    const auto dimm = w_newField.grid().getNoSpaceDim();
+    const auto min = w_newField.grid().xMin(1);
+    const auto max = w_newField.grid().xMax(1);
+    const auto nbPts = w_newField.grid().getNoPoints();
+    const auto div = w_newField.grid().getDivisions(1);
+    const auto &val = w_newField.values();
     auto siz = val.size();
     std::cout << "Value is :" << val[0] << "\n";
 
     auto beg = w_newField.begin();
 
-      //  auto& w_val =  w_newField.values();
-  //  w_val[0] = 1.2;
-  //  w_val[1] = 0.3;
-  //  w_val[2] = 1.;
-  //  w_val[3] = 12.3;
-  //  w_val[4] = 0.;
-  //  std::views::counted w_fieldVws(w_newField.cbegin()+1, 5);
+    //  auto& w_val =  w_newField.values();
+    //  w_val[0] = 1.2;
+    //  w_val[1] = 0.3;
+    //  w_val[2] = 1.;
+    //  w_val[3] = 12.3;
+    //  w_val[4] = 0.;
+    //  std::views::counted w_fieldVws(w_newField.cbegin()+1, 5);
 
-    // C++20 range concept and compile-time if (range is a concept something that is iterable) 
-    // if with initialization C++17 
-    if constexpr ( vsc19::valArrField w_newField{w_aa, std::string{"Swe"}}; std::ranges::range<decltype(w_newField)>) {
-		 	std::cout << "scalar field is a range\n";
-      
+    // C++20 range concept and compile-time if (range is a concept something that is iterable)
+    // if with initialization C++17
+    //  IMPORTANT i'm using the same as above, but its a new  field with zero initialization
+    // if-initialization that's the reason compiler not complaining about already defined
+    //  w_newField here is another instance defined inside if, that's explain why it returns
+    //  zero values when calling range::begin and range:;end (distance is ok, we have 5 grid nodes)
+    //  we didn't set any values for this field (it  works perfectly). Our field is a range
+    if constexpr (vsc19::valArrField w_newField{w_aa, std::string{"Swe"}}; std::ranges::range<decltype(w_newField)>)
+    {
       namespace rng = std::ranges; // make things cleaner
-      
-      auto begRng = rng::begin(w_newField);  // use ranges utility (safer)
-      auto endRng = rng::end(w_newField);    // ditto
-      auto rngDist = std::distance(begRng,endRng);
-      
-      //assert()
-      auto checkSiz = rng::size(w_newField); // ditto
+      namespace vws = std::views;  // ditto
 
-      // is that make sense!! NO do not compile 
-    //  std::views<vsc19::scalarField1D> w_vws(w_newField.cbegin()+1, w_newField.cend()-1);
+      std::cout << "scalar field is a range\n";\
+
+      // NOTE our scalar field is not initialized with values (actually it is initialized to 0 default value)
+      // the grid has 5 elements or node (below our test should return 0 and i think its what it does)
+
+      auto begRng = rng::begin(w_newField);         // use ranges utility (safer)
+      auto endRng = rng::end(w_newField);           // ditto
+      //auto rngDist = std::distance(begRng, endRng);  shall return 5
+      auto rngDist = rng::distance(w_newField);
+      assert(w_newField.grid().getNoPoints() == rngDist);
+      auto checkSiz = rng::size(w_newField);        // ditto
+      // not sure about this one (views are subrange)
+     auto vwsField = w_newField | vws::take(5); // use auto with views
 
       // could we use views to print some field values?
-      // C++17 feature Class Template Argument Deduction (CTAD)
-      for( const auto& elem : w_newField | std::views::take(5))
+      // C++17 feature "Class Template Argument Deduction" (CTAD)
+      for (const auto &elem : w_newField | std::views::take(5))
       {
-         std::cout << "Printing five elements\n";
+        std::cout << "Printing five elements\n";
 
-         std::cout << "Values is : " << elem << "\n";
+        std::cout << "Values is : " << elem << "\n";
       }
     }
 
-    std::cout << "Do whatever\n";
+    // some basic check before proceeding
+    static_assert(std::is_same_v<decltype(aRange), const std::array<double, 3> &>);
+
+    constexpr std::array myArray{1, 2, 3, 4, 5};                             // (1)
+    constexpr auto sum = std::accumulate(myArray.begin(), myArray.end(), 0); // (2)
+    std::cout << "sum: " << sum << std::endl;
+
+    constexpr std::string w_str{"asd"};
+    std::cout << "Checking C++20 new feature " << w_str << std::endl;
+
+    //  constexpr std::vector w_vecInt{ 1,2,3,4 };
+    // constexpr auto sum = std::accumulate( w_vecInt.cbegin(), w_vecInt.cend(), 0);
   }
 
-#if 0
-    template <typename Range /*Numeric range*/>
-    void numericalSchemeRef( const Range& aRange)
-    {
-      // some basic check before proceeding
-      static_assert( std::is_same_v<decltype(aRange), const std::array<double, 3> &>);
+  // Experimenting some new C++20 features which I believe will be helpfull in our numerical library 
+  template<std::ranges::input_range Range> // C++20 concept of range
+  decltype(auto) hllNumAlgorithm1D( const Range& aU1, const Range& aU2) // Range could be our scalar field
+  {
+     if constexpr (std::ranges::range<decltype(aU1)> && std::ranges::range<decltype(aU2)>)
+     {
+       std::cout << "We have our ranges and ready to proceed\n";
+      static_assert(std::size(aU1) == std::size(aU2));
+     }
+     if constexpr (!std::empty(aU1)) // C++23 we have "if consteval"
+     {
+      std::cout << "Ready to compute some of our algorithm\n";
+     }
+     std::cout << "Completed our basic tests of C++20 features\n";   
+     // just return something for debug purpose
+     return std::vector<double>(std::size(aU1));
+  }
 
-      constexpr std::array myArray{1, 2, 3, 4, 5};                             // (1)
-      constexpr auto sum = std::accumulate(myArray.begin(), myArray.end(), 0); // (2)
-      std::cout << "sum: " << sum << std::endl;
+  // Factory method ... Rvalue arguments can bind to the factory parameters
+  template<typename T, typename Arg>
+  std::shared_ptr<T> factory(Arg&& aArg)
+  {
+    return std::shared_ptr<T>(new T{std::forward<Arg>(aArg)});
+  }
 
-      constexpr std::string w_str{"asd"};
-      std::cout << "Checking C++20 new feature " << w_str << std::endl;
-
-      //  constexpr std::vector w_vecInt{ 1,2,3,4 };
-      // constexpr auto sum = std::accumulate( w_vecInt.cbegin(), w_vecInt.cend(), 0);
-    }
-#endif
-
+  // testing perfect forwarding to be use in algorithm development
+  template<typename ...Args>
+  void callNumTreatmentAlgo(Args&& ...args) // forward reference as argument
+  {
+    // we have 2 version of this algorithm ()
+    TraitementTermeSource2(std::forward<Args>(args)...);
+  }
 } // End of namespace

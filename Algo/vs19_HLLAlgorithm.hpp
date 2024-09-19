@@ -2,32 +2,53 @@
 
 // C++ include
 #include <cassert>
+// Range library
+#include <range>
 // STL container
 #include <valarray>
 #include <vector>
 // STL algorithm
 #include <algorithm>
 #include <numeric>
-
+// ...
 #include "vs19_AppConstant.hpp"
-//#include "vs19_UniversalConst.hpp"
+#include "vs19_UniversalConst.hpp"
 #include "vs19_SweFluxEvaluation.hpp"
 #include "numeric/Sfx_MinMod.hpp"  // minmod
-
-using namespace std;
 
 // alias
 using ArrayType = valarray<double>;
 
-#if 1
+#if 1 // for now testing purpose
 // Alias template (ArrayType<>)
 template<typename T = double>
 using NumArrayType = valarray<T>;
-
 #endif // 1
 
 namespace Sfx 
 {
+	// testing view concdept of the range library
+	// pass by value since view cheap to copy
+	template<typename UView> // must return a valarray
+	auto computeLeftState(UView aUview, UView aDUview) // shall return a valarray
+	{
+		//auto chekIter = decltype(std)
+		auto testcheck = decltype(aUview.begin());
+
+		// check if range
+		if( std::ranges::range(aUview)) {
+			static_assert(std::ranges::size(aUview) == vs19::EMCNEILNbSections::value);
+			static_assert(std::ranges::size(aUview) == std::ranges::size(aDUview));
+			const NumArrayType U(std::ranges::data(aUview), std::ranges::size(aUview));
+			const NumArrayType dU(std::ranges::data(aDUview), std::ranges::size(aDUview));
+			return U + 0.5 * dU; // left state at i-1/2
+		}
+		else {
+			return NumArrayType{}; // empty
+		}
+	}
+
+    
 	//
 	//  Originally written by Eric McNeil (Hydrodynamique1D.h). Adapted by 
 	//  Jean Belanger. 
@@ -70,7 +91,7 @@ namespace Sfx
 	 * @return pair numerical flux at cell face j+1/2 ]0,N-1]
 	*/
 	template<typename F, typename NumArrayType,
-	typename = std::enable_if<std::is_same_v<NumArrayType,std::valarray<double>>>>
+	typename = typename std::enable_if<std::is_same_v<NumArrayType,std::valarray<double>>>>
 	std::pair<NumArrayType,NumArrayType> // flux vector components (j+1/2)
 		HLLFluxAlgorithmTest( const NumArrayType& aU1, const NumArrayType& aU2, F&& aMinModSlopeLimiter)    // state variables components (j)
 	{
@@ -95,8 +116,8 @@ namespace Sfx
 		//}
 
 		// Sanity checks
-		static_assert( std::size(aU1) == EMCNEILNbSections::value);
-		static_assert( std::size(aU2) == EMCNEILNbSections::value);
+		static_assert( std::size(aU1) == vs19::EMCNEILNbSections::value);
+		static_assert( std::size(aU2) == vs19::EMCNEILNbSections::value);
 
 		//
 		// Reconstruction process at the cell interface x_j+1/2
@@ -125,7 +146,7 @@ namespace Sfx
 		auto w_dU1Shifted = dU1.shift(1);  // circular shift (shifted element at the end with element T{})  
 		auto w_dU2Shifted = dU2.shift(1);  // circular shift (shifted element at the end with element T{})
 
-		// last global discretization node (ghost node) overwrite
+		// last global discretization node (ghost node) overwrite i=100 
 		w_dU1Shifted[aU1.size() - 1] = aMinModSlopeLimiter(0., aU1[aU1.size() - 1] - aU1[aU1.size() - 2]);  // [i+1-i,i-i-1] stencil
 		w_dU2Shifted[aU2.size() - 1] = aMinModSlopeLimiter(0., aU2[aU2.size() - 1] - aU2[aU2.size() - 2]);  // [i+1-i,i-i-1] stencil
 
@@ -160,8 +181,18 @@ namespace Sfx
 		//  Uses the Minmod limiter for the slope reconstruction
 		//
 
+        // a view range[0,100[ view factory or adaptor, not sure need to check 
+        auto viewU1L = std::views::counted(std::begin(aU1), std::size(aU1) -1);
+        auto viewU2L = std::views::counted(std::begin(aU2), std::size(aU2) -1);
+        // again not sure (can i do that?) shall return valarray
+        auto valArrU1L = computeLeftState( viewU1L, std::views::counted( std::begin(w_dU1), vs19::EMCNEILNbSections::value-1)) ; 
+        auto valArrU2L = computeLeftState( viewU2L, std::views::counted( std::begin(w_dU2), vs19::EMCNEILNbSections::value-1)) ; 
+        // a view range]0,100] view
+        auto viewU1R = std::views::counted(std::ranges::next(begin(aU1)), vs19::EMCNEILNbSections::value-1);
+
+        // NOTE cannot initialize valarray with an iterator
 		// Compute the right and left states: UR, UL, FR et FL
-		const decltype(aU1) UL1{ std::begin(aU1 + 0.5 * dU1), std::size(aU1) -1 };
+		const NumArrayType UL1{ std::begin(aU1 + 0.5 * dU1), std::size(aU1) -1 };
 		const auto UL2 = aU2 + 0.5 * dU2;
 		const auto UR1 = aU1 - 0.5 * dU1;
 		const auto UR2 = aU2 - 0.5 * dU2;
@@ -170,7 +201,7 @@ namespace Sfx
 		//const auto FL1 = UL2[i];
 		//const auto FR1 = UR2[i + 1];
 
-		const decltype(UL2) FL1{ std::begin(UL2), UL2.size() - 1 };          // numerical flux first state variable at cell face j+1/2 left state
+		const NumArrayType FL1=UL2;          // numerical flux first state variable at cell face j+1/2 left state
 		const decltype(UR2) FR1{ std::next(std::begin(UR2)), UR2.size()-1 }; // numerical flux first state variable at cell face j+1/2 right state
 
 		// Flux (physical) for the St-Venant equation (without pressure term)
@@ -186,8 +217,9 @@ namespace Sfx
 		//const auto CR = ::sqrt(g * UR1[i + 1] / wT());
 		//const auto CL = ::sqrt(g * UL1[i] / wT());
 
-		const auto CR = ::sqrt(g * UR1 /*/ hyd::SectionWidth{}*/);
-		const auto CL = ::sqrt(g * UL1 /*/ hyd::SectionWidth{}*/);
+        // assume unit section width
+		const auto CR = std::sqrt(g * UR1 /*/ hyd::SectionWidth{}*/);
+		const auto CL = std::sqrt(g * UL1 /*/ hyd::SectionWidth{}*/);
 
 		// �tape interm�diaire: calcul de US et CS
 		const auto CS = 0.5 * (CL + CR) - 0.25 * (uL - uR);
@@ -206,8 +238,8 @@ namespace Sfx
 			[](double aVal1, double aVal2) -> double // lambda (anonymous function)
 			{ return std::min(aVal1,aVal2); });
 
-		const auto dR = uR + CR;
-		uS + CS
+	//	const auto dR = uR + CR;
+	//	const auto dS = uS + CS
 
 		// Implicitly we loop on the list of cell interfaces (x_j+1/2). 
 		// Then we compute the interface flux at second-order.  
@@ -254,8 +286,8 @@ namespace Sfx
 			// define g is deprecated
 			//float32 wG = Sfx::SimulationMgr::getSingleton().gravity();
 			// i do not know celerity wave or something like that
-			const auto CR = ::sqrt(g * UR1[i + 1] / wT());
-			const auto CL = ::sqrt(g * UL1[i] / wT());
+			const auto CR = std::sqrt(g * UR1[i + 1] / wT());
+			const auto CL = std::sqrt(g * UL1[i] / wT());
 
 			//	Une attention particuli�re devra �tre ici port�e sur
 			//	les signes (+/-) relativement au produit scalaire avec

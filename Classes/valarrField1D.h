@@ -7,11 +7,7 @@
 #include <valarray>
 #include <algorithm>
 #include <functional>
-
-// boost include
-//#include <boost/operators.hpp>
 // App include
-
 #include "gridLattice1D.h"
 
 namespace vsc19
@@ -25,21 +21,11 @@ namespace vsc19
     class scalarField1D
     {
 		public:
-
-            /** Smart pointer over the grid*/ 
-		  //  using gridLattice1DPtr = std::shared_ptr<gridLattice1D>;
-
-			/**
-			 * @brief alias template
-			 * @tparam T type
-			 */
-//			template<typename T>
-//			using dblvarray = std::valarray<T>;
+		    using valarraydbl = std::valarray<double>;
 
 			/**
 			 * @brief STL-container like interface (range)
 			 */
-		//	using dblvarray = std::valarray<double>;
 			using value_type = std::valarray<double>::value_type;
 			using pointer = value_type *;
 			using iterator = pointer;
@@ -89,7 +75,7 @@ namespace vsc19
 		//	scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, std::string aName, 
 		//	const std::vector<double>& aInitValues);
 
-#if 0   // all those ctor are implicitly generated (copy, assignment, move copy and assignment)
+#if 0   // those ctor are implicitly generated (copy, assignment, move copy and assignment and dtor)
         /**
          * @brief Construct a new valarr Field object
          * 
@@ -104,23 +90,6 @@ namespace vsc19
 		 * @return scalarField1D& 
 		 */
 		scalarField1D& operator= (const scalarField1D& aOther)=default;
-
-		// move semantic support
-
-		/**
-		 * @brief Move copy construct
-		 * 
-		 * @param aOther other field to construct from
-		 */
-        scalarField1D( scalarField1D&& aOther)=default;
-
-		/**
-		 * @brief Move assignment construct
-		 * 
-		 * @param aOther other field to construct from
-		 * @return scalarField1D& new created field  
-		 */
-        scalarField1D& operator= ( scalarField1D&& aOther)=default;
 #endif //if 0
 
 		/**
@@ -194,17 +163,24 @@ namespace vsc19
         /**
          * @brief 
          * 
-         * @param aOther 
+         * @param aOther scalar field to be multiplied to 
          * @return scalarField1D 
          */
          scalarField1D& operator*= ( double aDblVal);
          
 	     //	scalarField1D operator/= (const scalarField1D& aOther);
 
+        /**
+         * @brief Conversion operator (support backward comppatibility with legacy code) 
+         * 
+         * @return scalarField1D vector representation of the scalar field 
+         */
+         explicit operator std::vector<double>() const { return std::vector<double>{}; }
+
       private:
-        std::shared_ptr<gridLattice1D>        m_gridLattice;     /**< shared grid*/
-        std::shared_ptr<std::valarray<double>> m_gridPointValues; /**< shared array (point values)*/
-		std::string                           m_fieldName;       /**< field name*/
+        std::shared_ptr<gridLattice1D> m_gridLattice;      /**< shared grid*/
+        std::shared_ptr<valarraydbl>   m_gridPointValues; /**< shared array (point values)*/
+		std::string                    m_fieldName;        /**< field name*/
     };
 
     //
@@ -213,4 +189,10 @@ namespace vsc19
 
 	scalarField1D operator+ (const scalarField1D& aF1, const scalarField1D& aF2);
 	scalarField1D operator- (const scalarField1D& aF1, const scalarField1D& aF2);
-} // End of namespace
+ 	scalarField1D operator+ (const scalarField1D& aF1, double aDbl);
+	scalarField1D operator+ (double aDbl, const scalarField1D& aF1);
+	scalarField1D operator- (const scalarField1D& aF1, double aDbl);
+	scalarField1D operator- (double aDbl, const scalarField1D& aF1);
+	scalarField1D operator* (const scalarField1D& aF1, double aDbl);
+	scalarField1D operator* (double aDbl, const scalarField1D& aF1);
+ } // End of namespace

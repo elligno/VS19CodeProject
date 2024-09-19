@@ -49,7 +49,7 @@
 
 namespace vsc19 
 {
- /* template <typename T>
+   /* template <typename T>
   using is_vector = is_same_v<T, std::vector< typename T::value_type>,
     typename T::allocator_type>>;*/
 

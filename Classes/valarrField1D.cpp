@@ -98,25 +98,90 @@ namespace vsc19
 
 		    return w_retField;
     }
+
+    // this is tempoarary fix for now, just testing
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     scalarField1D operator-(const scalarField1D &aF1, const scalarField1D &aF2)
     {
-      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [1:100]"});
+      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
+      scalarField1D w_retField{ grid1Dptr, std::string{"return field"}};
+
+      auto &dblArr = w_retField.values();
+      std::transform( std::begin(aF1.values()), std::end(aF1.values()),
+                      std::begin(aF2.values()), std::begin(dblArr), std::minus<double>{});
+
+      return w_retField;
+    }
+
+   	scalarField1D operator+ (const scalarField1D& aF1, double aDbl)
+    {
+      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
+      scalarField1D w_retField{ grid1Dptr, std::string{"return field"}};
+
+      using namespace std::placeholders;
+      auto &dblArr = w_retField.values();
+      std::transform( std::begin(aF1.values()), std::end(aF1.values()),
+                      std::begin(dblArr), std::bind(std::plus<double>{}, _1, aDbl));
+
+      return w_retField;
+
+    }
+    
+	  scalarField1D operator+ (double aDbl, const scalarField1D& aF1)
+    {
+      return aF1+aDbl;
+    }
+
+	  scalarField1D operator- (const scalarField1D& aF1, double aDbl)
+    {
+      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
       scalarField1D w_retField{grid1Dptr, std::string{"return field"}};
+
+      using namespace std::placeholders;
       auto &dblArr = w_retField.values();
       std::transform(std::begin(aF1.values()), std::end(aF1.values()),
-                     std::begin(aF2.values()), std::begin(dblArr), std::minus<double>{});
+                     std::begin(dblArr), std::bind(std::minus<double>{}, _1, aDbl));
+
       return w_retField;
+    }
+
+    scalarField1D operator- (double aDbl, const scalarField1D& aF1)
+    {
+      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
+      scalarField1D w_retField{grid1Dptr, std::string{"return field"}};
+
+      using namespace std::placeholders;
+      auto &dblArr = w_retField.values();
+      std::transform(std::begin(aF1.values()), std::end(aF1.values()),
+                     std::begin(dblArr), std::bind(std::minus<double>{}, aDbl, _1));
+
+      return w_retField;
+    }
+
+   	scalarField1D operator* (const scalarField1D& aF1, double aDbl)
+    {
+      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
+      scalarField1D w_retField{grid1Dptr, std::string{"return field"}};
+
+      using namespace std::placeholders;
+      auto &dblArr = w_retField.values();
+      std::transform(std::begin(aF1.values()), std::end(aF1.values()),
+                     std::begin(dblArr), std::bind(std::multiplies<double>{}, _1, aDbl));
+
+      return w_retField;
+    }
+
+	  scalarField1D operator* (double aDbl, const scalarField1D& aF1)
+    {
+      return aF1*aDbl;
     }
 
     scalarField1D::iterator scalarField1D::begin()              { return std::begin(*m_gridPointValues); }
     scalarField1D::const_iterator scalarField1D::cbegin() const { return std::begin(*m_gridPointValues); }
     scalarField1D::iterator scalarField1D::end()                { return std::end(*m_gridPointValues); }
     scalarField1D::const_iterator scalarField1D::cend() const   { return std::end(*m_gridPointValues); }
-    scalarField1D::reverse_iterator scalarField1D::rbegin()
-    {
-      return reverse_iterator(end());
-    }
+
+    scalarField1D::reverse_iterator scalarField1D::rbegin()     { return reverse_iterator(end());      }
 
     scalarField1D::const_reverse_iterator scalarField1D::rbegin() const
     {
