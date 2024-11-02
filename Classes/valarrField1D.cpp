@@ -11,18 +11,21 @@ namespace vsc19
       m_fieldName{std::move(fieldname)}
     {
         // reset shared pointer (initialized with nullptr)
-        auto nbPts = m_gridLattice->getDivisions();
-        auto* ptrVarr = new std::valarray<double>((*m_gridLattice).getDivisions());
-        m_gridPointValues.reset(new std::valarray<double>((*m_gridLattice).getDivisions()));
+     //   auto nbPts = m_gridLattice->getDivisions();
+   //     auto ptrVarr = new std::valarray<double>((*m_gridLattice).getDivisions());
+        m_gridPointValues.reset(new std::valarray<double>(0., (*m_gridLattice).getDivisions()));
      }
-    // scalarField1D::scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, std::string aName, 
-		// 	const std::vector<double>& aValues)
-    // : m_gridLattice{grid},
+     scalarField1D::scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, std::string aName, 
+		 	const std::vector<double>& initVal)
+      : m_gridLattice{aGrid},
     //   m_gridPointValues{nullptr},
-    //   m_fieldName{std::move(fieldname)}
-    // {
-    //   m_gridPointValues.reset( new std::valarray<double>( aValues.data(), (*m_gridLattice).getDivisions()));
-    // }
+       m_fieldName{std::move(aName)}
+     {
+       m_gridPointValues.reset( new std::valarray<double>( initVal.data(), (*m_gridLattice).getDivisions()));
+       	// initialize the field with values
+		   std::copy( initVal.begin(), initVal.end(), std::begin(*m_gridPointValues));
+     }
+
     void scalarField1D::values( std::valarray<double>& aNewArray)
     {
         m_gridPointValues.reset(&aNewArray);
@@ -75,56 +78,53 @@ namespace vsc19
 
 #endif // 0
 
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     scalarField1D operator+ ( const scalarField1D& aF1, const scalarField1D& aF2)
     {
-        auto w_tmp = aF1.values() + aF2.values();
-
-        const auto& aa = aF1.values();
-        const auto& bb = aF2.values();
-        
         auto nx = aF1.grid().getDivisions();
         auto xmin = aF1.grid().xMin();
         auto xmax = aF1.grid().xMax();
-        auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(nx,xmin,xmax);
-
-        // copy ctor
-		    scalarField1D w_retField {grid1Dptr,std::string{"return field"}};
-        // reference ...
-        auto& w_begArr = w_retField.values();
-		    // not sure about this one???
-		    std::copy(std::begin(w_tmp),std::end(w_tmp), std::begin(w_begArr));
-		    //w_retField.values(w_tmp);  ????
-
+		    scalarField1D w_retField { std::make_shared<vsc19::gridLattice1D>(nx,xmin,xmax), 
+                                   std::string{"Added field"}};
+        // array value 
+        w_retField.values() = aF1.values() + aF2.values();
 		    return w_retField;
     }
 
-    // this is tempoarary fix for now, just testing
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    scalarField1D operator-(const scalarField1D &aF1, const scalarField1D &aF2)
+    scalarField1D operator- ( const scalarField1D &aF1, const scalarField1D &aF2)
     {
-      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
-      scalarField1D w_retField{ grid1Dptr, std::string{"return field"}};
+        auto nx = aF1.grid().getDivisions();
+        auto xmin = aF1.grid().xMin();
+        auto xmax = aF1.grid().xMax();
+		    scalarField1D w_retField { std::make_shared<vsc19::gridLattice1D>(nx,xmin,xmax), 
+                                   std::string{"Substracted field"}};
+        // array value 
+        w_retField.values() = aF1.values() - aF2.values();
+		    return w_retField;    
+    }
 
-      auto &dblArr = w_retField.values();
-      std::transform( std::begin(aF1.values()), std::end(aF1.values()),
-                      std::begin(aF2.values()), std::begin(dblArr), std::minus<double>{});
-
+    scalarField1D operator* (const scalarField1D& aF1, const scalarField1D& aF2)
+    {
+      auto nx = aF1.grid().getDivisions();
+      auto xmin = aF1.grid().xMin();
+      auto xmax = aF1.grid().xMax();
+      scalarField1D w_retField{std::make_shared<vsc19::gridLattice1D>(nx, xmin, xmax),
+                               std::string{"return field"}};
+      // array value
+      w_retField.values() = aF1.values() * aF2.values();;
       return w_retField;
+
     }
 
    	scalarField1D operator+ (const scalarField1D& aF1, double aDbl)
     {
-      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
-      scalarField1D w_retField{ grid1Dptr, std::string{"return field"}};
-
-      using namespace std::placeholders;
-      auto &dblArr = w_retField.values();
-      std::transform( std::begin(aF1.values()), std::end(aF1.values()),
-                      std::begin(dblArr), std::bind(std::plus<double>{}, _1, aDbl));
-
+      auto nx = aF1.grid().getDivisions();
+      auto xmin = aF1.grid().xMin();
+      auto xmax = aF1.grid().xMax();
+      scalarField1D w_retField{std::make_shared<vsc19::gridLattice1D>(nx, xmin, xmax),
+                               std::string{"return field"}};
+      // array value
+      w_retField.values() = aF1.values() + aDbl;
       return w_retField;
-
     }
     
 	  scalarField1D operator+ (double aDbl, const scalarField1D& aF1)
@@ -134,40 +134,30 @@ namespace vsc19
 
 	  scalarField1D operator- (const scalarField1D& aF1, double aDbl)
     {
-      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
-      scalarField1D w_retField{grid1Dptr, std::string{"return field"}};
-
-      using namespace std::placeholders;
-      auto &dblArr = w_retField.values();
-      std::transform(std::begin(aF1.values()), std::end(aF1.values()),
-                     std::begin(dblArr), std::bind(std::minus<double>{}, _1, aDbl));
-
+      auto nx = aF1.grid().getDivisions();
+      auto xmin = aF1.grid().xMin();
+      auto xmax = aF1.grid().xMax();
+      scalarField1D w_retField{std::make_shared<vsc19::gridLattice1D>(nx, xmin, xmax),
+                               std::string{"return field"}};
+      // array value
+      w_retField.values() = aF1.values() - aDbl;
       return w_retField;
     }
 
     scalarField1D operator- (double aDbl, const scalarField1D& aF1)
     {
-      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
-      scalarField1D w_retField{grid1Dptr, std::string{"return field"}};
-
-      using namespace std::placeholders;
-      auto &dblArr = w_retField.values();
-      std::transform(std::begin(aF1.values()), std::end(aF1.values()),
-                     std::begin(dblArr), std::bind(std::minus<double>{}, aDbl, _1));
-
-      return w_retField;
+      return aF1+aDbl;
     }
 
    	scalarField1D operator* (const scalarField1D& aF1, double aDbl)
     {
-      auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
-      scalarField1D w_retField{grid1Dptr, std::string{"return field"}};
-
-      using namespace std::placeholders;
-      auto &dblArr = w_retField.values();
-      std::transform(std::begin(aF1.values()), std::end(aF1.values()),
-                     std::begin(dblArr), std::bind(std::multiplies<double>{}, _1, aDbl));
-
+      auto nx = aF1.grid().getDivisions();
+      auto xmin = aF1.grid().xMin();
+      auto xmax = aF1.grid().xMax();
+      scalarField1D w_retField{std::make_shared<vsc19::gridLattice1D>(nx, xmin, xmax),
+                               std::string{"return field"}};
+      // array value
+      w_retField.values() = aF1.values()*aDbl;
       return w_retField;
     }
 

@@ -121,7 +121,7 @@ namespace vsc19
 			 return m_xmin + (Delta() * (index - 1)); 
 	    } 
         // using with std container such as valarray (index start at 0 and end at size-1)
-		int getBase() const { return 0; }			// get base values
+		int getBase() const { return 0; }			   // get base values
 		int getMaxI() const { return m_division - 1; } // upper limit of array
 
 		// must be private, access denied to client

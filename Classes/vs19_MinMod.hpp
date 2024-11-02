@@ -22,7 +22,7 @@ namespace vsc19
 	*/
   template<typename T>
     requires dbl_arg_type<T>
-  class MinMod
+  class MinMod19
   {
 	public:
 		// Don't remember exactly what for? return type
@@ -48,4 +48,33 @@ namespace vsc19
 			}
         }
   };
+   template<typename T>
+    requires dbl_arg_type<T>
+  class MinMod
+  {
+	public:
+		// Don't remember exactly what for? return type
+		// something has to do with decay!! need to check
+        auto operator() ( T aVal1, T aVal2)
+        {
+			if ( aVal1 * aVal2 <= 0.)
+				return 0.;
+
+			else if ( (std::abs(aVal1) < std::abs(aVal2)) && (aVal1*aVal2 > 0.))
+				return aVal1;
+
+			else if ( (std::abs(aVal2) < std::abs(aVal1)) && (aVal1*aVal2 > 0.))
+				return aVal2;
+
+			else if ( std::abs(aVal2) == std::abs(aVal1))		//	ATTENTION, mis pour v�rification !!!! sanity check!!
+				return aVal1;
+			else
+			{
+				// NO!!! hard to debug
+				std::cerr << "Fonction MINMOD: situation ne correspondant pas a celle attendue\n";
+				exit(EXIT_FAILURE); // what else to do? throw an exception
+			}
+        }
+  };
+
 } // End f namespace

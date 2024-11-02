@@ -72,25 +72,8 @@ namespace vsc19
 			 * @param aInitValues field initial values 
 			 * @return
 			 */
-		//	scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, std::string aName, 
-		//	const std::vector<double>& aInitValues);
-
-#if 0   // those ctor are implicitly generated (copy, assignment, move copy and assignment and dtor)
-        /**
-         * @brief Construct a new valarr Field object
-         * 
-         * @param aOther 
-         */
-	    scalarField1D( const scalarField1D& aOther)=default;
-	
-		/**
-		 * @brief Assign new valarr field object
-		 * 
-		 * @param aOther 
-		 * @return scalarField1D& 
-		 */
-		scalarField1D& operator= (const scalarField1D& aOther)=default;
-#endif //if 0
+			scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, 
+			std::string aName, const std::vector<double>& aInitValues);
 
 		/**
 		 * @brief Enable access to grid-point values
@@ -113,7 +96,7 @@ namespace vsc19
          * 
          * @return std::string 
          */
-		std::string name() const                       { return m_fieldName; }
+		std::string name() const  { return m_fieldName; }
 
 		/**
 		 * @brief Set the values of the field
@@ -174,21 +157,42 @@ namespace vsc19
          * @brief Conversion operator (support backward comppatibility with legacy code) 
          * 
          * @return scalarField1D vector representation of the scalar field 
+		 *   by-value since C++17 copy elison is mandatory
          */
-         explicit operator std::vector<double>() const { return std::vector<double>{}; }
+         explicit operator std::vector<double>() const 
+		 {  
+			return std::vector<double>(std::begin(*m_gridPointValues),std::end(*m_gridPointValues)); 
+		 }
 
-      private:
+         /**
+         * @brief Services to expose field data as std vector (to be use by legacy code)
+         * 
+         * @return std vector  (by-value since C++17 copy elison is mandatory)
+         */
+		std::vector<double> asStdVector() const 
+		{
+			return std::vector<double>(std::begin(*m_gridPointValues), std::end(*m_gridPointValues));
+	    }
+
+		/**
+		 * @brief Check emptyness
+		 *
+		 * @return true/false
+		 */
+		[[nodiscard]] bool isEmpty() noexcept { return (*m_gridPointValues).size() == 0; }
+
+	private:
         std::shared_ptr<gridLattice1D> m_gridLattice;      /**< shared grid*/
         std::shared_ptr<valarraydbl>   m_gridPointValues; /**< shared array (point values)*/
 		std::string                    m_fieldName;        /**< field name*/
     };
 
-    //
-	// Math operations on scalar field
-	//
-
+    /** @brief Math operations on scalar field
+	 * 
+	*/
 	scalarField1D operator+ (const scalarField1D& aF1, const scalarField1D& aF2);
 	scalarField1D operator- (const scalarField1D& aF1, const scalarField1D& aF2);
+	scalarField1D operator* (const scalarField1D& aF1, const scalarField1D& aF2);
  	scalarField1D operator+ (const scalarField1D& aF1, double aDbl);
 	scalarField1D operator+ (double aDbl, const scalarField1D& aF1);
 	scalarField1D operator- (const scalarField1D& aF1, double aDbl);

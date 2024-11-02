@@ -4,7 +4,8 @@
 // C++ includes
 #include <cassert>
 #include <iostream>
-// C++20 inc;lude
+// C++20 includes
+#include <concepts>
 #include <ranges>  // C++20 ranges
 // STL includes
 #include <numeric>
@@ -13,24 +14,52 @@
 // App include
 #include "vs19_valArrField.h"
 
-namespace vs19 // forward declaration
+namespace vs19 // forward declarations
 {
-    void TreatmentSource2( std::vector<double>& aS, 
-      std::vector<double>&& aQ, std::vector<double>&& aA, std::vector<double>&& aH, //rvalue reference
-      const std::vector<double> &n,  double aDx /*= 10.*/, unsigned aNbSections /*= 101*/);
+  //** new C++20 feature (template function)*/ 
+  void testAutoPrm( const auto& aAutoPrm) 
+  {
+    std::cout << "Auto parameter C++20 supported" << aAutoPrm << '\n';
+  }
 
-      void TraitementTermeSource2( std::vector<double> &S, const std::vector<double> &Q,
+  class VS19Type; // forward declaration (incomplete type)
+  /** C++20 Concept works fine with incomplete type*/ 
+  void myFunc2Class( const std::same_as<VS19Type> auto& aVs19Type) 
+  {
+    aVs19Type.methodVs19();
+  }
+
+ /** Physics algorithm ...*/
+ void TraitementTermeSource2(
+      std::vector<double> &S, const std::vector<double> &Q,
       const std::vector<double> &A, const std::vector<double> &H,
       const std::vector<double> &n, const double dx, const int NbSections,
       double B /*=1*/);
 
+  /** Another impl of physics algorithm based rvalue reference (move semantic)
+   *   Usage
+   *     TreatmentSource2(..., qField.asStdVector(), ...) pass a temporary  
+  */
+  void TreatmentSource2(  std::vector<double>& aS, 
+      std::vector<double>&& aQ, std::vector<double>&& aA, std::vector<double>&& aH, //rvalue reference
+      const std::vector<double> &n,  double aDx /*= 10.*/, unsigned aNbSections /*= 101*/)
+      {
+        // GlobalDiscretization->gamma().getDownstream(); b.c.
+        // can freely modify the original and avoid the copy
+        aQ.push_back(0.); // add ghost node value
+
+        // do some calculation (compute derivative) use ghost node
+        assert(101==aQ.size());
+
+        std::cout << "Completed rvalue reference algorithm check\n";
+      }
+
      //  void foo( const std::vector<int>& aVecInt);
      //  void foo( std::vector<int>& aVecInt);
-}
+}//End of namespace (fwd declaration)
 
 namespace vsc19 {
 
-#if 1
   // C++17 
   // glvalue, bind to everything (mutable, unmutable, lvalue, ...) 
   void foo( const std::vector<int>& aVecInt)
@@ -44,12 +73,12 @@ namespace vsc19 {
       std::cout << "Vector not empty\n";
     }
   }
-  
+
+  // reference lvalue  
   void foo( std::vector<int>& aVecInt)
   {
     std::cout << "Calling reference signature\n";
   }
-#endif
 
   // forward reference (perfect forwarding)
   template <typename T>
@@ -77,7 +106,7 @@ namespace vsc19 {
 
    // testing some
   template <typename Range /*Numeric range*/>
-  void numericalSchemeRef(const Range &aRange)
+  void numericalSchemeRef( const Range &aRange)
   {
     // some basic check before proceeding
     static_assert(std::is_same_v<decltype(aRange), const vsc19::valArrField &>);
@@ -89,7 +118,7 @@ namespace vsc19 {
 
     vsc19::valArrField::gridlatticeptr w_aa{new vsc19::GridLattice{5, 0., 1.}}; // 5 nodes from xmin=0. to xmax=1.
     vsc19::valArrField w_newField{w_aa, std::string{"Jean Test"}, 2.3}; // initialize field with value
-
+    
     const auto dimm = w_newField.grid().getNoSpaceDim();
     const auto min = w_newField.grid().xMin(1);
     const auto max = w_newField.grid().xMax(1);
@@ -159,7 +188,8 @@ namespace vsc19 {
     // constexpr auto sum = std::accumulate( w_vecInt.cbegin(), w_vecInt.cend(), 0);
   }
 
-  // Experimenting some new C++20 features which I believe will be helpfull in our numerical library 
+  /** Experimenting some new C++20 features which 
+   * I believe will be helpfull in our numerical library */  
   template<std::ranges::input_range Range> // C++20 concept of range
   decltype(auto) hllNumAlgorithm1D( const Range& aU1, const Range& aU2) // Range could be our scalar field
   {
@@ -175,20 +205,5 @@ namespace vsc19 {
      std::cout << "Completed our basic tests of C++20 features\n";   
      // just return something for debug purpose
      return std::vector<double>(std::size(aU1));
-  }
-
-  // Factory method ... Rvalue arguments can bind to the factory parameters
-  template<typename T, typename Arg>
-  std::shared_ptr<T> factory(Arg&& aArg)
-  {
-    return std::shared_ptr<T>(new T{std::forward<Arg>(aArg)});
-  }
-
-  // testing perfect forwarding to be use in algorithm development
-  template<typename ...Args>
-  void callNumTreatmentAlgo(Args&& ...args) // forward reference as argument
-  {
-    // we have 2 version of this algorithm ()
-    TraitementTermeSource2(std::forward<Args>(args)...);
   }
 } // End of namespace

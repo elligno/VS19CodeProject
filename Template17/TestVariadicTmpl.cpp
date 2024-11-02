@@ -6,6 +6,7 @@
 namespace vsc19 
 {
     void funcInt(int aVal) {aVal+1;}
+    
     void mkFrmTpl(int aInt1, int aInt2, float aDbl) 
     {
       aInt1 = 1+aInt2;

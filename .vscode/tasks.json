@@ -11,10 +11,11 @@
             "args": [
                 "/Zi",
                 "/EHsc",
-                "/MT",
+                "/MD",
                 "-std:c++20",
                 "${workspaceFolder}\\*.cpp",
                 "${workspaceFolder}\\Test\\*.cpp",
+                "${workspaceFolder}\\Algo\\*.cpp",
                 "${workspaceFolder}\\Classes\\*.cpp",
                 "${workspaceFolder}\\TestCPP17\\*.cpp",
                 "-IE:/boost/boost_1_82_0",

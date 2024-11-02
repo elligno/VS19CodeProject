@@ -162,14 +162,24 @@ namespace vsc19
   }
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++
-  // fold expression (see N. Josuttis chap 14 C++17 The Complete Guide) template function
+  // fold expression (see N. Josuttis chap 14 
+  //   " C++17 The Complete Guide) template function
   // +++++++++++++++++++++++++++++++++++++++++++++++++++
   
-  // just testing variadic template
+  // just testing variadic template could be used NodalValue
+  // in the DamBreak++ Wave Simulator tool box
   template <typename... Params> // parameter pack
   struct jbTpl
   {
     std::tuple<Params...> m_tpl; // pack expansion
+    jbTpl() = default; // to be used in a collection (ctor size)
+    jbTpl(Params... Prms) : m_tpl(Prms...) {}
+    auto size() const { return std::tuple_size_v<decltype(m_tpl)>;}
+    auto getData() const {return m_tpl;}
+    /**  call logical operator ==,!, <,<=,>,>= data member
+     *  tuple implement <=> spaceship operator
+    */ 
+    auto operator <=> (const jbTpl& aOther) const = default;
   };
 
   // pattern creation
@@ -233,20 +243,13 @@ void printWithSpace( const First& aFirstElem, const Args&... arg)
 template<typename First, typename ...Args>
 void printAddspace10( const First& aFirstElem, const Args& ...args) 
 {
-  std::cout <<  aFirstElem;
+  std::cout << aFirstElem;
   // avoid unnecessary copy of 'aArg' since lambda return objects by value (default)
   (std::cout << ... << [] (const Args& aArg) -> decltype(auto) 
   {
      std::cout << ' ';
      return aArg;
   }(args)) << '\n';
-}
-
-// is that make sense? kind of factory based on perfect-forwarding
-template<typename T, typename... Args>
-std::shared_ptr<T> factoryCreator(const Args&&... args)
-{
-  return std::shared_ptr<T>{ new T {std::forward<T>(args...)}};
 }
 
 /**
@@ -294,4 +297,15 @@ std::shared_ptr<T> factoryCreator(const Args&&... args)
     //return w_minMod(dU1, dU2);
   }
 #endif // 0
+
+/**
+   * @brief Check type parameters are the same.
+   * @Usage 
+   *   to be completed
+  */
+template<typename T, typename... TN>
+struct isHomegeneous {
+  // using fold expression (C++17 new features)
+  static constexpr bool value = (std::is_same_v<T,TN> && ...);
+};
 } // End of namespace

@@ -29,19 +29,12 @@ namespace vsc19
 		template<typename T> constexpr T cPiOver180{ cPi<T> / 180. };
 		template<typename T> constexpr T c180OverPi{ 180. / cPi<T> };
 		// not sure if we keep it!!
-		template<typename T = double> constexpr T gPi{ 4. * ::atan(1.) };
+	//	template<typename T = double> constexpr T gPi{ 4. * ::atan(1.) };
 
 		/**
-		 * @brief Helper to define some application constant
-		 * @tparam T constant type
-		*/
-		template<auto v>
-		struct AppConstant {
-			static constexpr auto value = v; // inline variable and a definition since C++17
-		};
-
-		/**
-		*   @brief E. McNeil constant for the number of sections (scenario)
-		*/
-		using EMCNEILNbSections = AppConstant<101>;
+		 * @brief variable template
+		 * @tparam T precision type
+		 */
+		template <typename T = long double>
+		constexpr T gPi = {3.14159265358979};
 } // End of namespace

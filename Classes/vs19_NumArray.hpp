@@ -4,6 +4,9 @@
 
 // C++ include
 #include <iostream>
+// STL includes
+#include <vector>
+#include <valarray>
 
 namespace vsc19 {
 
@@ -84,7 +87,11 @@ namespace vsc19 {
 		const T* getPtr() const;
 		      T* getPtr();
 
-    // why don't we overload operator << ?
+        /** Some utilities for backward compatibility*/
+	    std::vector<double> toStdVector() const     { return std::vector<double>(A,A+size());}
+		std::valarray<double> toStdValarray() const {return std::valarray<double>(A,size());}
+
+         // why don't we overload operator << ?
 		//std::iostream operator << ( std::iostream & aIOstream, const NumArray & aArray);
 		void print( std::ostream & os);
 

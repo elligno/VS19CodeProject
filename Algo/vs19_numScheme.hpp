@@ -97,7 +97,7 @@ namespace vsc19
     TreatmentTermeS0( aNumArray, std::forward<Types>(args)...); // is that make sense?
   }
 
-  template<typename Range /*Numeric range*/>
+  template<std::ranges::input_range Range /*Numeric range*/>
   void numericalSchemeRef( const Range& aRange)
   {
     constexpr std::array myArray{ 1, 2, 3, 4, 5 };                            // (1)

@@ -18,7 +18,7 @@ namespace vsc19
 
         // raw string
         using namespace std::literals;
-        const auto w_filePath = R"(E:\JeanProjects\JeanSlnVS19\DamBreakSimulator)"s;
+        const auto w_filePath = R"(E:\JeanProjects\TestVS2019)"s;
         //const auto w_pathFile = w_filePath + "\\" + aFileName;
        // std::cout << "Params of run path: " << w_pathFile;
 

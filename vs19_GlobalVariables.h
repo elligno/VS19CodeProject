@@ -1,6 +1,8 @@
 #pragma once
 
+// C++ includes
 #include <array>
+#include <ranges>
 
 namespace vs19 
 {
@@ -15,14 +17,19 @@ namespace vs19
   template<auto N> constexpr decltype(N) dval = N;
 
   /**
-   * @brief variable template
-   * @tparam T precision type
-  */
-  template<typename T = long double> constexpr T gPi = { 3.14159265358979 };
-
-  /**
    * @brief Compute factorial uisng compile-time feature
   */
   template<int N>
   constexpr int factorial = factorial<N - 1>*N;
+
+  /**
+   * @brief Contraining alias template
+  */
+  template<std::ranges::range T>
+  using ValueType = std::ranges::range_value_t<T>;
+
+  /**
+   * @brief Contraining variable template
+  */
+
 } // End of namespace
