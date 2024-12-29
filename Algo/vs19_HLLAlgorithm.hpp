@@ -123,57 +123,6 @@ namespace Sfx
 		// Reconstruction process at the cell interface x_j+1/2
 		// 
 
-		// Need documentation abpout each step of the algorithm 
-		NumArrayType dU1( std::size(aU1));
-		NumArrayType dU2( std::size(aU2));
-
-		// compute gradient over each cell
-		std::adjacent_difference( std::cbegin(aU1), std::cend(aU1), std::begin(dU1));
-		std::adjacent_difference( std::cbegin(aU2), std::cend(aU2), std::begin(dU2));
-
-		dU1[0] = 0.; // force first element to 0 (adjacent_difference keep first element unchanged)
-		dU2[0] = 0.; // force first element to 0 (adjacent_difference keep first element unchanged)
-		
-		// apply slope limiter function for each gradient (minimum slope)
-		std::adjacent_difference( std::cbegin(dU1), std::cend(dU1),  // range to apply limiter
-			std::begin(dU1), // result 
-			std::forward<F>(aMinModSlopeLimiter));    // slope limiter function 
-		
-		std::adjacent_difference( std::cbegin(dU2), std::cend(dU2),  // range to apply limiter 
-			std::begin(dU2), // result 
-			std::forward<F>(aMinModSlopeLimiter));   // slope limiter function 
-		
-		auto w_dU1Shifted = dU1.shift(1);  // circular shift (shifted element at the end with element T{})  
-		auto w_dU2Shifted = dU2.shift(1);  // circular shift (shifted element at the end with element T{})
-
-		// last global discretization node (ghost node) overwrite i=100 
-		w_dU1Shifted[aU1.size() - 1] = aMinModSlopeLimiter(0., aU1[aU1.size() - 1] - aU1[aU1.size() - 2]);  // [i+1-i,i-i-1] stencil
-		w_dU2Shifted[aU2.size() - 1] = aMinModSlopeLimiter(0., aU2[aU2.size() - 1] - aU2[aU2.size() - 2]);  // [i+1-i,i-i-1] stencil
-
-		// don't need anymore of shifted array, might as well move it 
-		w_dU1 = std::move(w_dU1Shifted); // move semantic supported by valarray
-		w_dU2 = std::move(w_dU2Shifted);
-
-		//	Calculs pr�alables: �valuation des �l�ments du vecteur dU
-		// Boundary point: i = 0
-		//dU1[0] = Sfx::minmod(aU1[1] - aU1[0], 0.);  // std::bind2nd(ptr_fun(minmod)  
-		//dU2[0] = Sfx::minmod(aU2[1] - aU2[0], 0.);
-
-		// we may have a problem here, index out of range when i=100
-		// since aU1 has size is 101 (NbSections) [0,...,100] but a i=100
-		// we loop for [i+1]=101 throw an exception out of range.
-		// Fix for last index we compare with 0. and i<i < aU1.size()-1 (stop at 99)
-		// loop through the number of section 
-		// Note: loop shall start at 1 (index) zero has already been evaluated.
-		//for (auto i = 1; i < aU1.size() - 1; i++) {  // added by Jean Belanger (15/01/07) 
-		//	dU1[i] = Sfx::minmod(aU1[i + 1] - aU1[i], aU1[i] - aU1[i - 1]);  // i+1/2
-		//	dU2[i] = Sfx::minmod(aU2[i + 1] - aU2[i], aU2[i] - aU2[i - 1]);  // i+1/2
-		//}
-
-		// boundary cnd (avoid index out of range)
-		//dU1[aU1.size() - 1] = Sfx::minmod(0., aU1[aU1.size() - 1] - aU1[aU1.size() - 2]);  // i+1/2
-		//dU2[aU2.size() - 1] = Sfx::minmod(0., aU2[aU2.size() - 1] - aU2[aU2.size() - 2]);  // i+1/2
-
 		// NOTE 
 		//  MUSCL (Monotone Upwind Scheme Conservation System Law) 
 		//  Second-order linear extrapolation (polynomial reconstruction at the interface).
@@ -331,6 +280,8 @@ namespace Sfx
 			}
 		}
 	}
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	void HLL_Scheme( ArrayType& aFF1, ArrayType& aFF2,   // flux vector components (j+1/2)
 		const ArrayType& aU1, const ArrayType& aU2)    // state variables components (j)
@@ -507,5 +458,5 @@ namespace Sfx
 		}
 	}
 #endif // 0
-	}
+//	}
 } // End of namespace

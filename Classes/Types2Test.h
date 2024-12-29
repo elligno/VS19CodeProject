@@ -22,7 +22,7 @@ namespace vsc19
              std::strong_ordering::greater;           
         }
 
-        void assign( const auto& aOther) { std::cout << std::format("This a test with C++20{} fmt", aOther);}
+        void assign( const auto& aOther) { std::cout << std::format("This a test with C++20 {} fmt", aOther);}
 
         private:
         float m_floatVal;
@@ -32,6 +32,7 @@ namespace vsc19
     class Coord2D 
     {
         public:
+        Coord2D()=default;
         constexpr Coord2D( double aXcoord, double aYCoord) : m_x{aXcoord}, m_y{aYCoord} {}
 
         constexpr auto getXcoord() const { return m_x;}

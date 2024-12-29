@@ -87,7 +87,7 @@ namespace vsc19
 			if (base != 0) //NOTE index for std valarray
 			{
 				std::cout << "base=" << base
-						  << " not allowed yet (only 1 works)\n";
+						  << " not allowed for valarray (only 0 works)\n";
 				exit(1); // throw an exception!!!
 			}
 
@@ -118,7 +118,10 @@ namespace vsc19
 		double getPoint( int index) // not sure about this one!
 		{
 			// if pass index from 1,...,N this is correct
-			 return m_xmin + (Delta() * (index - 1)); 
+			// this is wrong we are using valarray which is 
+			// indexed from 0,...,N-1
+			//return m_xmin + (Delta() * (index - 1)); 
+		    return m_xmin + Delta()*index; 
 	    } 
         // using with std container such as valarray (index start at 0 and end at size-1)
 		int getBase() const { return 0; }			   // get base values
@@ -250,8 +253,8 @@ namespace vsc19
 	{
 		using boost::numeric_cast;
 		using boost::numeric::bad_numeric_cast;
-		using boost::numeric::negative_overflow;
-		using boost::numeric::positive_overflow;
+	//	using boost::numeric::negative_overflow;
+	//	using boost::numeric::positive_overflow;
 
 		//return (max[dimension-1] - min[dimension-1])/double(division[dimension-1]);
 

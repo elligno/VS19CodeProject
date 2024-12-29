@@ -112,7 +112,6 @@ namespace vsc19
         // frictionless (Manning coeff. = 0.) => N2=0.       
         auto N2 = std::pow(valarray<double>(A.values().size()),2);
 
-
         // Energy slope term 
         auto Sf = (N2*w_Q*w_Q.apply(std::abs))/(w_A*w_A*pow43); 
         

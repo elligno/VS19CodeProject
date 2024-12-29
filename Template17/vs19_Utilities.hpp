@@ -1,17 +1,21 @@
 
 #pragma once
 
-// C++ include
+// C++ includes
+#include <fstream> // ifstream
+#include <sstream>
 #include <iostream>
 #include <optional>
 #include <charconv>    // from_char
-// STL include
+// STL includes
 #include <algorithm>
-#include <string_view> // ...
+#include <vector>
+#include <concepts>    // C++20 
+#include <string_view> // C++17
 //#include <type_traits>  std::decay
-
 // Base Types package 
 //#include "vs19_MinMod.hpp"
+#include "../vs19_AppConstant.hpp"
 
 namespace vsc19 
 {
@@ -98,6 +102,28 @@ namespace vsc19
   template<auto N> void printNValue() { std::cout << "Value is: " << N << std::endl; }
 
   /**
+   * @brief Printing values with separator
+   * 
+   * @Usage printValue<'-'>(); as an alternative
+  */
+  template<auto Sep = ' ', typename First, typename... Args>
+  void printAutoSep( const First& aFirst, Args... aArgs) 
+  {
+    std::cout << aFirst;
+
+    // lambda or anonymous function
+    auto addSpace = [] ( const Args& arg) 
+    {
+      std::cout << Sep << arg; 
+    };
+
+    // fold expression as return (operator <<)
+    ( ...,addSpace(aArgs));
+    
+    std::cout << '\n';
+  }
+ 
+  /**
    * @brief Define variable template (since C++14)
    * @tparam T variable type
   */
@@ -165,55 +191,7 @@ namespace vsc19
   // fold expression (see N. Josuttis chap 14 
   //   " C++17 The Complete Guide) template function
   // +++++++++++++++++++++++++++++++++++++++++++++++++++
-  
-  // just testing variadic template could be used NodalValue
-  // in the DamBreak++ Wave Simulator tool box
-  template <typename... Params> // parameter pack
-  struct jbTpl
-  {
-    std::tuple<Params...> m_tpl; // pack expansion
-    jbTpl() = default; // to be used in a collection (ctor size)
-    jbTpl(Params... Prms) : m_tpl(Prms...) {}
-    auto size() const { return std::tuple_size_v<decltype(m_tpl)>;}
-    auto getData() const {return m_tpl;}
-    /**  call logical operator ==,!, <,<=,>,>= data member
-     *  tuple implement <=> spaceship operator
-    */ 
-    auto operator <=> (const jbTpl& aOther) const = default;
-  };
-
-  // pattern creation
-  template <typename... Params>
-  struct jbTpl1
-  {
-    std::tuple<std::string, Params...> m_tplPatrn;
-  };
-
-  template <typename... Params>
-  struct jbTpl2
-  {
-    std::tuple<std::unique_ptr<Params>...> m_tpluniqPtr; // intantiate for each arg in the pack
-  };
-
-// Pattern is the following:
-// if the parameter pack contains types: int, float,int
-// pair<string,int>, pair<string,float>, pair<string,int> result
-// tuple<pair<string,int>, pair<string,float>, pair<string,int>>
-template<typename... Prms>
-struct TestTplPtrn
-{
-  // create a pattern base on the pack expansion
-  std::tuple<std::pair<std::string,Prms>...> m_tplPrmsPtrn;
-};
-
-// let compiler deduce the return type
-template<typename... Ts>
-auto createPairTpl() // not sure about this one!!!
-{
-  // not sure about this one
-  return make_tuple(TestTplPtrn<Ts...>);
-}
-
+    
 #if 0
 // Using fold expression
 // Note this could be done in a more comppact form
@@ -259,7 +237,7 @@ void printAddspace10( const First& aFirstElem, const Args& ...args)
  * @param b a character to compare with
  * @return succeed if both char sequence are identical
 */
-	template<typename T, std::size_t N, std::size_t M> // could we use auto inxstead of size_t?
+	template<typename T, std::size_t N, std::size_t M> // could we use auto instead of size_t?
 		//typename = std::enable_if_t<std::is_same_v<T, char>>>
 	requires std::is_same_v<T, char>
 		std::optional<int> id17( const T(&a)[N], const T(&b)[M])  // arguument deduction (decay??) N. Josuttis "C++17 The Complete Guide" 
@@ -308,4 +286,124 @@ struct isHomegeneous {
   // using fold expression (C++17 new features)
   static constexpr bool value = (std::is_same_v<T,TN> && ...);
 };
+
+/** @brief Read value from a stream
+ *  @return type
+ */
+template <typename T> T read(std::istringstream &is) {
+  T t;
+  is >> t;
+  return t;
+}
+
+/** @brief Parse a line and return values as tuple
+ *  @return let compiler deduce return type
+ */
+template <typename... Args> auto parse(std::istringstream &is) {
+  return std::make_tuple(read<Args>(is)...);
+}
+
+/** @brief Read file format "full result" for each simulation time
+ * Use utility function to parse line (return a tuple with
+ * value in reverse order tuple index 4->0 instead of 0->4)
+ * Return a vector of values corresponding at simulation time.
+ */
+template <typename... Args> // let compiler deduce return type
+auto extractLineValuesTmplt( std::ifstream* afileStream, std::string&& aFirstLine) {
+  std::string w_line2Read{std::move(aFirstLine)};
+  std::vector<std::tuple<Args...>> w_vecoftpl;
+  w_vecoftpl.reserve(vsc19::EMCNEILNbSections::value); // hard coded!!!
+  do { // read full result file format (wave simulator storing result)
+    // replace sequence of white space by a single one (Qt version)
+    //auto w_lineTrimmed = w_line2Read.simplified().toStdString();
+    // using STL algorithm
+    // does it returns something (make white unique)
+    // an iterator to new end (logical end), need to test this
+    std::string w_lineTrimmed{ w_line2Read.begin(),    // begin
+    std::unique(w_line2Read.begin(),w_line2Read.end())}; // logical end
+     
+    // step to next white space one after one
+    std::istringstream w_iis{w_lineTrimmed};
+
+    // parse a line with format X|H|A|...
+    auto w_tplResult = parse<Args...>(w_iis);
+    w_vecoftpl.push_back(
+        std::move(w_tplResult)); // not sure we are moving something!! No, see
+                                 // Scott Meyer's book item #25
+
+    // maybe i should clear the string (just to make sure)
+    w_line2Read.clear(); // ready to read the next line
+  } while (std::getline(*afileStream,w_line2Read) && !w_line2Read.empty());
+  // Qt version 
+  //} while (afileStream.readLineInto(&w_line2Read) && !w_line2Read.isEmpty());
+
+  return w_vecoftpl;
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++
+//                C++20 concepts
+// ++++++++++++++++++++++++++++++++++++++++++++++++
+
+// Reference
+//  https://johnfarrier.com/breaking-down-c20-callable-concepts/
+
+template <std::invocable F>
+void call_if_callable(F func) {
+    std::cout << "Callable!n";
+    func();
+}
+
+// shall be same as the function above (C++20)
+void callIfCallable( std::invocable auto func)
+{
+  std::cout << "Callable!n";
+  func();
+}
+
+// Template function that requires a RegularInvocable
+template <std::regular_invocable<double> T>
+double computeAndPrint(T&& callable, double value) {
+    double result = callable(value);
+    std::cout << "Result: " << result << "n";
+    return result;
+}
+
+// Using the function that accepts a std::regular_invocable
+  //  computeAndPrint(squareRoot, 16.0);  Valid, as squareRoot is side-effect free and consistent
+
+    // Lambda example
+ //   auto lambda = [](double x) { return x * x; };
+ //   computeAndPrint(lambda, 4.0); // Also valid for the same reasons
+
+// Template function that requires an Invocable
+template <std::invocable<int> T>
+void invokeWithArg(T&& callable) {
+    callable(42);
+}
+
+// Function template using std::invocable
+template<std::invocable F>
+void myFunction(F func) {
+    std::cout << "Invoking function...n";
+    func(); // Invoke the callable
+}
+
+// Lambda function
+    // auto printMessage = []() {
+    //     std::cout << "Hello, C++20 Concepts!n";
+    // };
+
+    // Pass the lambda to the function template
+   // myFunction(printMessage);
+
+    // Function pointer
+   // void (*funcPtr)() = []() { 
+   //     std::cout << "Function pointer called.n"; 
+    //};
+
+    // Pass the function pointer to the function template
+    //myFunction(funcPtr);
+
+    // Uncommenting the following line will cause a compile-time error
+    // myFunction(5); // Error: '5' does not satisfy std::invocable
 } // End of namespace

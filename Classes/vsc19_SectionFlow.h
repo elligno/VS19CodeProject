@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+// App include
+#include "Types2Test.h"
 
 namespace vsc19
 {
@@ -22,16 +24,17 @@ namespace vsc19
     SectionFlow( unsigned aId, double aX, SectionType aType = SectionType::unit);
 
     // section parameters or hydraulic parameters
-    unsigned m_id;      // section number id
-    double m_x;         // x-coordinate
-    double m_Z;         // bottom thalweg or topography?? an array
-    double m_H;         // unit width, otherwise an array
-    double m_N;         // Manning coefficient
-    double m_B;         // section width
-    double m_S0am;      // some parameters from E. McNeil code
-    double m_S0av;      // some parameters from E. McNeil code
-    SectionType m_type; // section geometry type
-
+    unsigned m_id;       // section number id
+    double m_x;          // x-coordinate
+    double m_Z;          // bottom thalweg or topography?? an array
+    double m_H;          // unit width, otherwise an array
+    double m_N;          // Manning coefficient
+    double m_B;          // section width
+    double m_S0am;       // some parameters from E. McNeil code
+    double m_S0av;       // some parameters from E. McNeil code
+    SectionType m_type;  // section geometry type
+    Coord2D m_sectCoord;
+    
     // default implementation
     SectionType getSectionType() const { return SectionType::unit; }
     bool isUnitWidth() const { return true; }

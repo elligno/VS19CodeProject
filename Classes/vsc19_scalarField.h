@@ -99,7 +99,7 @@ public:
     void print( std::ostream& aValues2Print);
 
     // conversion operator (support to rhs discretization args)
-    explicit operator std::vector<double> const () 
+    explicit operator std::vector<double> () const noexcept 
     { return std::vector<double> { grid_point_values->to_stdVector()}; }
 
     // math operations on field

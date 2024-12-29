@@ -104,7 +104,7 @@ namespace vsc19 {
     std::cout << "Do whatever\n";
   }
 
-   // testing some
+   // testing some new concepts C++20
   template <typename Range /*Numeric range*/>
   void numericalSchemeRef( const Range &aRange)
   {
@@ -150,7 +150,7 @@ namespace vsc19 {
       namespace rng = std::ranges; // make things cleaner
       namespace vws = std::views;  // ditto
 
-      std::cout << "scalar field is a range\n";\
+      std::cout << "scalar field is a range\n";
 
       // NOTE our scalar field is not initialized with values (actually it is initialized to 0 default value)
       // the grid has 5 elements or node (below our test should return 0 and i think its what it does)
@@ -172,7 +172,7 @@ namespace vsc19 {
 
         std::cout << "Values is : " << elem << "\n";
       }
-    }
+    }//if
 
     // some basic check before proceeding
     static_assert(std::is_same_v<decltype(aRange), const std::array<double, 3> &>);

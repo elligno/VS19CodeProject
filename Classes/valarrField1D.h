@@ -80,8 +80,9 @@ namespace vsc19
 		 * 
 		 * @return std::valarray<double>& 
 		 */
-		      std::valarray<double>& values()        { return *m_gridPointValues; }
-		const std::valarray<double>& values() const  { return *m_gridPointValues; }
+		    std::valarray<double>& values()             { return *m_gridPointValues; }
+		   // std::valarray<double> values() &&           { return std::move(*m_gridPointValues); }
+			const std::valarray<double>& values() const { return *m_gridPointValues; }
 
 		/**
 		 * @brief Enable access to the grid
@@ -157,11 +158,12 @@ namespace vsc19
          * @brief Conversion operator (support backward comppatibility with legacy code) 
          * 
          * @return scalarField1D vector representation of the scalar field 
-		 *   by-value since C++17 copy elison is mandatory
+		 *          by-value since C++17 copy elison is mandatory
          */
-         explicit operator std::vector<double>() const 
+         explicit operator std::vector<double>() const noexcept
 		 {  
-			return std::vector<double>(std::begin(*m_gridPointValues),std::end(*m_gridPointValues)); 
+			//return std::vector<double>(std::begin(values()),std::end(values())); 
+			return std::vector<double>(&(*m_gridPointValues)[0],&(*m_gridPointValues)[0]+(*m_gridPointValues).size());
 		 }
 
          /**
@@ -169,9 +171,9 @@ namespace vsc19
          * 
          * @return std vector  (by-value since C++17 copy elison is mandatory)
          */
-		std::vector<double> asStdVector() const 
+		std::vector<double> asStdVector() const noexcept
 		{
-			return std::vector<double>(std::begin(*m_gridPointValues), std::end(*m_gridPointValues));
+			return std::vector<double>(&(*m_gridPointValues)[0],&(*m_gridPointValues)[0]+(*m_gridPointValues).size());
 	    }
 
 		/**

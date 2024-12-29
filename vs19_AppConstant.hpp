@@ -16,4 +16,5 @@ namespace vsc19
 	*/
 	using EMCNEILNbSections = AppConstant<101>;
 	using TESTSIZE5 = AppConstant<5>;
+	using DIM = AppConstant<100>;
 } // End of namespace

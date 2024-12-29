@@ -1,6 +1,7 @@
 #pragma once
 
-#include "vs19_valArrField.h"
+#include <ranges>
+#include "../Classes/vs19_valArrField.h"
 
 namespace vsc19 
 {
@@ -34,8 +35,9 @@ namespace vsc19
 
             // assert()
             auto checkSiz = rng::size(w_newField);
-            // is that make sense!!
-            std::views<vsc19::valArrField> w_vws(w_newField.cbegin() + 1, w_newField.cend() - 1);
+            // create a view (subrange)
+            auto w_vws = 
+               std::views::all( std::ranges::next(w_newField.cbegin()) , std::ranges::prev(w_newField.cend()));
 
             // could we use views to print some field values?
             // C++17 feature Class Template Argument Deduction (CTAD)
@@ -49,5 +51,5 @@ namespace vsc19
             // use default container algorithm
             Cont w_cont; w_cont.reserve(101);
         }
-
+    }
 } // End of namespace
