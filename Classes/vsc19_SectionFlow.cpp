@@ -18,17 +18,29 @@ namespace vsc19
   // 	// something to do
   //    }
 
-  SectionFlow::SectionFlow(unsigned aId, double aX, SectionType aType/*=unit*/)
-  : m_id(aId),
-    m_x(aX),
-    m_Z(0.),
-    m_H(0.),
-    m_N(0.),
-    m_B(1.),        // unit section width
-    m_S0am(0.),
-    m_S0av(0.),
-    m_type(aType)
-  {
-    // something to do
-  }
-} // End of namespace
+  // SectionFlow::SectionFlow(unsigned aId, float64 aX, float64 aH, SectionType aType)
+  //   : m_id(aId),
+  //   m_x(aX),
+  //   m_Z(0.),
+  //   m_H(aH),
+  //   m_N(0.),
+  //   m_B(1.),        // unit section width
+  //   m_S0am(0.),
+  //   m_S0av(0.),
+  //   m_type(aType)
+  // {
+  // }
+
+//   SectionFlow::SectionFlow(unsigned aId, float64 aX, float64 aH, float64 aZ, float64 aN, SectionType aType)
+//       : m_id(aId),
+//         m_x(aX),
+//         m_Z(aZ),
+//         m_H(aH),
+//         m_N(aN),
+//         m_B(1.), // unit section width
+//         m_S0am(0.),
+//         m_S0av(0.),
+//         m_type(aType)
+//   {
+//   }
+ } // End of namespace

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <type_traits> // enable_if
+//#include <type_traits>  enable_if
 
 #include <cmath>
 #include <cstdlib>
@@ -8,8 +8,8 @@
 namespace vsc19 
 {
 	// Alias template
-	template<typename T>
-	using EnableFloatingPoint = std::enable_if_t<std::is_floating_point_v<T>>;
+//	template<typename T>
+	//using EnableFloatingPoint = std::enable_if_t<std::is_floating_point_v<T>>;
 
 	template<typename T>
 	concept dbl_arg_type = std::is_floating_point_v<T>;
@@ -29,16 +29,16 @@ namespace vsc19
 		// something has to do with decay!! need to check
         constexpr auto operator() ( T aVal1, T aVal2)
         {
-			if constexpr( aVal1 * aVal2 <= 0.)
+			if ( aVal1 * aVal2 <= 0.)
 				return 0.;
 
-			else if constexpr( (std::abs(aVal1) < std::abs(aVal2)) && (aVal1*aVal2 > 0.))
+			else if ( (std::abs(aVal1) < std::abs(aVal2)) && (aVal1*aVal2 > 0.))
 				return aVal1;
 
-			else if constexpr( (std::abs(aVal2) < std::abs(aVal1)) && (aVal1*aVal2 > 0.))
+			else if ( (std::abs(aVal2) < std::abs(aVal1)) && (aVal1*aVal2 > 0.))
 				return aVal2;
 
-			else if constexpr( std::abs(aVal2) == std::abs(aVal1))		//	ATTENTION, mis pour v�rification !!!! sanity check!!
+			else if ( std::abs(aVal2) == std::abs(aVal1))		//	ATTENTION, mis pour v�rification !!!! sanity check!!
 				return aVal1;
 			else
 			{
@@ -48,6 +48,7 @@ namespace vsc19
 			}
         }
   };
+  #if 0
    template<typename T>
     requires dbl_arg_type<T>
   class MinMod
@@ -76,5 +77,5 @@ namespace vsc19
 			}
         }
   };
-
+#endif
 } // End f namespace

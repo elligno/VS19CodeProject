@@ -14,7 +14,7 @@
 // App include
 #include "vsc19_EnvVarMgr.h"
 
-namespace emcil 
+namespace vsc19 
 {
 	void EnvVariablesManager::put( const std::string& name,
 		const std::string& value) 

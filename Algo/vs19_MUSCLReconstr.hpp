@@ -17,29 +17,37 @@ namespace vs19
 	auto MUSCLReconstruction( const NumArrayType& aU1, const NumArrayType& aU2, 
 			F&& aSlopeLimiter) // slope limiter function (Universal reference)
 	{
-
-		// NOTE 
+		// compute gradient over each cell with applying slope limiter function 
+		// NOTE do not return a valarray, return a view. What we want?
+		// view cheap to copy and move, should not use const auto& which disable move
+        auto [dU1,dU2] = computeDU(aU1, aU2, std::forward<F>(aSlopeLimiter));
+		
+		const NumArrayType w_dU1(std::begin(dU1), w_dU1.size()); // gradient of the first state variable
+		const NumArrayType w_dU2(std::begin(dU2), w_dU2.size()); // gradient of the second state variable
+		
 		//  MUSCL (Monotone Upwind Scheme Conservation System Law) 
 		//  Second-order linear extrapolation (polynomial reconstruction at the interface).
 		//  Total Variation Diminishing (TVD) property guarantees convergence of such schemes
-		//  Uses the Minmod limiter for the slope reconstruction
-
-        // compute gradient over each with applying slope limiter function 
-        computeDU(aU1, aU2, std::forward<F>(aSlopeLimiter)); // gradient over each cell
-
+		//  Uses the Minmod limiter for the slope reconstruction.
+		
 		//
 		// Reconstruction process at the cell interface x_j+1/2
-		// 
-        // Compute the right and left states: UR, UL, FR et FL (computational domain)
-		const NumArrayType UL1{ std::begin(aU1 + 0.5 * dU1), Sfx::DIM::value};  // j
-		const NumArrayType UL2{ std::begin(aU2 + 0.5 * dU2), Sfx::DIM::value};  // j+1
-        const NumArrayType UR1{ std::next(std::begin(aU1 - 0.5 * dU1)), Sfx::DIM::value}; 
-		const NumArrayType UR2{ std::next(std::begin(aU2 - 0.5 * dU2)), Sfx::DIM::value};
+		// Second-order achieve by: U + 0.5*dU where dU derivative at first order
+		// expand state variable in a serie (dU has been computed by using a function
+		// to limit slope called "Slope limiter"), physically similar to adding dissipation or diffusion  
+
+        // Compute the left  and right states: UR, UL(state variables)
+		const NumArrayType UL1{ std::begin(aU1 + 0.5 * w_dU1), vsc19::DIM::value};  // j
+		const NumArrayType UL2{ std::begin(aU2 + 0.5 * w_dU2), vsc19::DIM::value};  // j+1
+        const NumArrayType UR1{ std::next(std::begin(aU1 - 0.5 * dU1)), vsc19::DIM::value}; 
+		const NumArrayType UR2{ std::next(std::begin(aU2 - 0.5 * dU2)), vsc19::DIM::value};
 
         // is it possible to do this? is that make sense? not really!! use type
 		// vector doesn't tell me much
 		// i think what would make sense, return a vector of cellFaceVariables 
-        return {UL1,UL2,UR1,UR2}; // return a tuuple?? can i use structured binding?
+		// template argument deduction
+		return std::make_tuple(UL1,UL2,UR1,UR2); 
+        //return {UL1,UL2,UR1,UR2};  return a tuuple?? can i use structured binding?
 
 		//const auto UL2 = aU2 + 0.5 * dU2;
 	//	const auto UR1 = aU1 - 0.5 * dU1;

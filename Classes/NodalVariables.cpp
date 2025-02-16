@@ -1,9 +1,9 @@
 
 // stl include
-#include <algorithm>
+//#include <algorithm>
 // library include
 #include "NodalVariables.h"
-#include "../vs19_PrintUtils.hpp" // print tuple
+//#include "../vs19_PrintUtils.hpp" // print tuple
 
 namespace vsc19
 {
@@ -14,19 +14,19 @@ namespace vsc19
 	//   but a closer look will help!! 
 	
 	// default ctor (these are default values and have no meaning)
-	Nodal_Value::Nodal_Value()
-	: m_NumOfAttr (   3 ),
-	  m_TieNode_No(  -1 ),
-    m_nodeIdX   {0,0.},
-    m_Node3Data { 0.,0.,0. }
-	{
+	// Nodal_Value::Nodal_Value()
+	// : m_NumOfAttr (   3 ),
+	//   m_TieNode_No(  -1 ),
+    // m_nodeIdX   {0,0.},
+    // m_Node3Data { 0.,0.,0. }
+	// {
 // 		m_nodeIdX.first=0;    // node id
 // 		m_nodeIdX.second=0.;  // node x-coord.
 // 
 // 		std::get<0>(m_Node3Data)=0.; // A 
 // 		std::get<1>(m_Node3Data)=0.; // Q
 // 		std::get<2>(m_Node3Data)=0.; // H
-	}
+//	}
 // 	Nodal_Value::Nodal_Value( nodeIdX aNodeId, int32 aNumOfAttr/*=1*/,
 // 		int32 aTieNode/*=-1*/)
 // 	 : m_NumOfAttr ( aNumOfAttr ),
@@ -40,15 +40,15 @@ namespace vsc19
 // // 		std::get<2>(m_Node3Data)=0.; // H
 // 	}
 
-	Nodal_Value::Nodal_Value( nodeIdX aNodeXId, int aNumAttr, tuplevar aTuple, 
-		int aTiedNode/*=-1*/)
-		: m_NumOfAttr ( aNumAttr  ),
-		  m_TieNode_No( aTiedNode ),
-		  m_nodeIdX(aNodeXId),
-		  m_Node3Data( aTuple)
-	{
-		// not much to do for now
-	}
+	// Nodal_Value::Nodal_Value( nodeIdX aNodeXId, int aNumAttr, tuplevar aTuple, 
+	// 	int aTiedNode/*=-1*/)
+	// 	: m_NumOfAttr ( aNumAttr  ),
+	// 	  m_TieNode_No( aTiedNode ),
+	// 	  m_nodeIdX(aNodeXId),
+	// 	  m_Node3Data( aTuple)
+	// {
+	// 	// not much to do for now
+	// }
 
 	// copy ctor
 // 	Nodal_Value::Nodal_Value( const Nodal_Value& aOther)
@@ -97,15 +97,15 @@ namespace vsc19
 	// ___________________________________________________
 	//
 	//  friend function
-	std::ostream& operator<< ( std::ostream& s, Nodal_Value& nv) 
-	{
-		s << "{";
-		// output tie node number to indicate been tied
-		if( nv.tie_node_no() == -1) s << nv.node_no() << " | (";
-		else s << nv.node_no() << "-" << ( nv.tie_node_no()) << " | {";  
-        // last time i used it, it wasn't working, it crash!!!
-        PRINT_TUPLE<0,3,double,double,double>::print(s, nv.Values());
-        s << ") } ";
+	// std::ostream& operator<< ( std::ostream& s, Nodal_Value& nv) 
+	// {
+	// 	s << "{";
+	// 	// output tie node number to indicate been tied
+	// 	if( nv.tie_node_no() == -1) s << nv.node_no() << " | (";
+	// 	else s << nv.node_no() << "-" << ( nv.tie_node_no()) << " | {";  
+    //     // last time i used it, it wasn't working, it crash!!!
+    //     PRINT_TUPLE<0,3,double,double,double>::print(s, nv.Values());
+    //     s << ") } ";
 
 		// printing nodal attributes
 		// auto checkNumofdim = nv.no_of_dim();
@@ -121,7 +121,7 @@ namespace vsc19
 		// 	// 			++nv.Values();
 		// 	// 		}
 		// 	// 		
-		return s;
-	}
+//		return s;
+//	}
 
 } // End of namespace

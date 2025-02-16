@@ -3,7 +3,7 @@
 namespace vsc19 
 {
 	/**
-	 * @brief Helper to define some application constant
+	 * @brief Helper to define compile-time constant (metaprogramming)
 	 * @tparam T constant type
 	*/
 	template<auto v>

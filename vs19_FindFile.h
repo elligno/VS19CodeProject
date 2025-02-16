@@ -14,7 +14,7 @@ namespace vs19
   */
   bool FindFile( const std::filesystem::path& directory,
                  std::filesystem::path& path,
-                 const std::string& fileName)
+                 std::string_view fileName)
   {
     bool found = false;
 

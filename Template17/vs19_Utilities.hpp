@@ -12,6 +12,7 @@
 #include <vector>
 #include <concepts>    // C++20 
 #include <string_view> // C++17
+#include <filesystem>  // C++17
 //#include <type_traits>  std::decay
 // Base Types package 
 //#include "vs19_MinMod.hpp"
@@ -139,7 +140,7 @@ namespace vsc19
   };
 
   /**
-   * @brief Ensure that any output of any argument is extended by a space (can be used with fold expression)
+   * @brief Ensure that any output of any argument is extended by a space (can be used with fold expression).
    * @tparam T Argument type
   */
   template<typename T>
@@ -327,9 +328,8 @@ auto extractLineValuesTmplt( std::ifstream* afileStream, std::string&& aFirstLin
 
     // parse a line with format X|H|A|...
     auto w_tplResult = parse<Args...>(w_iis);
-    w_vecoftpl.push_back(
-        std::move(w_tplResult)); // not sure we are moving something!! No, see
-                                 // Scott Meyer's book item #25
+    w_vecoftpl.push_back(std::move(w_tplResult)); // not sure we are moving something!! No, see
+                                                  // Scott Meyer's book item #25
 
     // maybe i should clear the string (just to make sure)
     w_line2Read.clear(); // ready to read the next line
@@ -406,4 +406,4 @@ void myFunction(F func) {
 
     // Uncommenting the following line will cause a compile-time error
     // myFunction(5); // Error: '5' does not satisfy std::invocable
-} // End of namespace
+} // End of namespace vsc19

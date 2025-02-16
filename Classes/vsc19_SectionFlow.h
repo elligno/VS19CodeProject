@@ -4,6 +4,8 @@
 // App include
 #include "Types2Test.h"
 
+using float64 = double;
+
 namespace vsc19
 {
   class SectionFlow // boost 'operator' library such as
@@ -14,14 +16,20 @@ namespace vsc19
     // for now support only these 2 geometry types
     enum class SectionType { unit = 0, rectangular = 1 };
 
-    // default ctor (if we want to use it with STL container)
-    // SectionFlow() = default;
-    // SectionFlow( const SectionFlow& aOther) = default;
-    // SectionFlow& operator= ( const SectionFlow& aOther) = default;
-
-    // set most of the section hydraulic parameters to default value
-    // such N=0,B=1,Z=0
-    SectionFlow( unsigned aId, double aX, SectionType aType = SectionType::unit);
+    // should declare another ctor with Manning, Z and H values
+    // ctor above implicitly set these to zero (frictionless, flat bed and ) 
+    constexpr SectionFlow( unsigned aId, float64 aX, float64 aH, float64 aZ=0., 
+        float64 aN=0., SectionType aType = SectionType::unit)
+        : m_id(aId),
+        m_x(aX),
+        m_Z(aZ),
+        m_H(aH),
+        m_N(aN),
+        m_B(1.), // unit section width
+        m_S0am(0.),
+        m_S0av(0.),
+        m_type(aType)
+    {}
 
     // section parameters or hydraulic parameters
     unsigned m_id;       // section number id
@@ -37,18 +45,18 @@ namespace vsc19
     
     // default implementation
     SectionType getSectionType() const { return SectionType::unit; }
-    bool isUnitWidth() const { return true; }
-    bool isFrictionLess() const { return true; }
-    bool isFlatBottom() const { return true; }
-    double X() const { return m_x; }
-    double Z() const { return m_Z; }
-    double H() const { return m_H; }
-    double N() const { return m_N; }
-    double B() const { return m_B; }
-    double getS0am() const { return m_S0am; }
-    double getS0av() const { return m_S0av; }
-    unsigned getId() const { return m_id; }
-    SectionType getType() const { return m_type; }
+    constexpr bool isUnitWidth() const { return true; }
+    constexpr bool isFrictionLess() const { return true; }
+    constexpr bool isFlatBottom() const { return true; }
+    constexpr double X() const { return m_x; }
+    constexpr double Z() const { return m_Z; }
+    constexpr double H() const { return m_H; }
+    constexpr double N() const { return m_N; }
+    constexpr double B() const { return m_B; }
+    constexpr double getS0am() const { return m_S0am; }
+    constexpr double getS0av() const { return m_S0av; }
+    constexpr unsigned getId() const { return m_id; }
+    constexpr SectionType getType() const { return m_type; }
 
     // setter section properties
     void setH(double aH) { m_H = aH; }
@@ -64,6 +72,21 @@ namespace vsc19
       std::cout << "Section id :" << m_id << " " << "X: " << m_x << " " << "Z: " << m_Z << " " << "H: "
         << m_H << " " << "N: " << m_N << " " << "B: " << m_B << " " << "S0am: " << m_S0am << " "
         << "S0av: " << m_S0av << "\n";
+    }
+    // comparison operator (==, mapped by default !=)
+    bool operator== (const SectionFlow& aOther) const 
+    {
+      return (m_id==aOther.m_id) && (m_x==aOther.m_x);
+    }
+    // relational operator (<,<=,>,>=)
+    std::partial_ordering operator<=> ( const SectionFlow& aOther) const
+    {
+      auto cmp_id = m_id <=> aOther.m_id;
+      if( cmp_id !=0 )
+      {
+        return cmp_id; // strong ordering converted to return type
+      }
+      return m_x <=> aOther.m_x; // partial ordering for double
     }
   };
 } // End of namespace

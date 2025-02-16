@@ -15,16 +15,16 @@ namespace vsc19
    //     auto ptrVarr = new std::valarray<double>((*m_gridLattice).getDivisions());
         m_gridPointValues.reset(new std::valarray<double>(0., (*m_gridLattice).getDivisions()));
      }
-     scalarField1D::scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, std::string aName, 
-		 	const std::vector<double>& initVal)
-      : m_gridLattice{aGrid},
-    //   m_gridPointValues{nullptr},
-       m_fieldName{std::move(aName)}
-     {
-       m_gridPointValues.reset( new std::valarray<double>( initVal.data(), (*m_gridLattice).getDivisions()));
-       	// initialize the field with values
-		   std::copy( initVal.begin(), initVal.end(), std::begin(*m_gridPointValues));
-     }
+    //  scalarField1D::scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, std::string aName, 
+		//  	const std::vector<double>& initVal)
+    //   : m_gridLattice{aGrid},
+    // //   m_gridPointValues{nullptr},
+    //    m_fieldName{std::move(aName)}
+    //  {
+    //    m_gridPointValues.reset( new std::valarray<double>( initVal.data(), (*m_gridLattice).getDivisions()));
+    //    	// initialize the field with values
+		//    std::copy( initVal.begin(), initVal.end(), std::begin(*m_gridPointValues));
+    //  }
 
     void scalarField1D::values( std::valarray<double>& aNewArray)
     {

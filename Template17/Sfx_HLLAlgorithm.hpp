@@ -11,6 +11,7 @@
 
 // ...
 #include "../vs19_UniversalConst.hpp"
+#include "../vs19_AppConstant.hpp"
 
 using float64 = double;
 
@@ -25,6 +26,33 @@ template<typename T = float64>
 using NumArrayType = valarray<T>;
 
 #endif // 1
+
+// Algotirm description
+// Computational domain extension [0,DIM-1] => DIM number of nodes
+// Global domain exetension [0,N] include ghost node ()
+// the  extra node is call "Ghost Node" since we have an
+// open bondary at the right far end (last compuational node
+// is not set by physical boundary condition, need to compute
+// state variables which require to compute flux at cell face
+// according to numerical algorithm.
+// face gradient in the reconstruction process of state variables at cell face.
+// Convention (left boundary is a tied node and right boundary is open)
+//  Use global face index from 0,...,N-1 in this prototype means [0,99]
+// First cell face is between first (i=0) and second node (i=1)
+// not part of the computation, its value is set by physical b.c.
+// Last cell face is after last node of the computational domain
+// return list of numerical flux at those cell faces, pair of these
+// can be used to represent "cell" and where
+// if constexpr( std::is_same_v<NumArrayType, std::valarray<double>>)
+//{
+//	//SFINAE (Substitution Failure Is Not An Error)
+//	// run this algortihm
+//}
+// else
+//{
+//	// do something else (vector or scalarField)
+//	//HLL_Scheme(); E. McNeil original code
+//}
 
 /**
  * @brief Compute the physical flux of St-Venant equation (incomplete)
@@ -73,35 +101,9 @@ namespace Sfx
 	std::pair<NumArrayType,NumArrayType> // flux vector components (j+1/2)
 		HLLFluxAlgorithm( const NumArrayType& aU1, const NumArrayType& aU2, F&& aMinModSlopeLimiter)    // state variables components (j)
 	{
-		// Computational domain extension [0,DIM-1] => DIM number of nodes
-		// Global domain exetension [0,N] include ghost node ()
-		// the  extra node is call "Ghost Node" since we have an 
-		// open bondary at the right far end (last compuational node 
-		// is not set by physical boundary condition, need to compute 
-		// state variables which require to compute flux at cell face
-		// according to numerical algorithm.   
-		// face gradient in the reconstruction process of state variables at cell face.
-		// Convention (left boundary is a tied node and right boundary is open)
-		//  Use global face index from 0,...,N-1 in this prototype means [0,99]
-		// First cell face is between first (i=0) and second node (i=1)
-		// not part of the computation, its value is set by physical b.c. 
-		// Last cell face is after last node of the computational domain
-		// return list of numerical flux at those cell faces, pair of these 
-		// can be used to represent "cell" and where 
-		//if constexpr( std::is_same_v<NumArrayType, std::valarray<double>>)
-		//{
-		//	//SFINAE (Substitution Failure Is Not An Error)
-		//	// run this algortihm
-		//}
-		//else
-		//{
-		//	// do something else (vector or scalarField)
-		//	//HLL_Scheme(); E. McNeil original code
-		//}
-
 		// Sanity checks
-		static_assert( std::size(aU1) == Sfx::EMCNEILNbSections::value);
-		static_assert( std::size(aU2) == Sfx::EMCNEILNbSections::value);
+		static_assert( std::size(aU1) == vsc19::EMCNEILNbSections::value);
+		static_assert( std::size(aU2) == vsc19::EMCNEILNbSections::value);
 
 		//
 		// Reconstruction process at the cell interface x_j+1/2
@@ -133,7 +135,7 @@ namespace Sfx
 		const auto FL1 = UL2; // numerical flux first state variable at cell face j+1/2 left state
 		const auto FR1 = UR2; // numerical flux first state variable at cell face j+1/2 right state
 
-        // NOTE see scott Meyer's book "Effective Modern C++"
+        // NOTE see scott Meyer's book "Effective Modern C++" passing a 'const'
 		// Flux (physical) for the St-Venant equation (without pressure term)
 		const auto FL2 = StVenant1D_Incomplete_Flux(UL1, UL2);
 		const auto FR2 = StVenant1D_Incomplete_Flux(UR1, UR2);
@@ -148,7 +150,8 @@ namespace Sfx
 		const auto CR = std::sqrt( vsc19::cGravity<float64> * UR1); // section width is unity
 		const auto CL = std::sqrt( vsc19::cGravity<float64> * UL1); // ditto
 
-		// �tape interm�diaire: calcul de US et CS
+		// intermediate step: calcul de US et CS
+		// NOTE these formulas are wrong, sign error for each 
 		const auto CS = 0.5 * (CL + CR) - 0.25 * (uL - uR);
 		const auto uS = 0.5 * (uL - uR) + CL - CR;
 

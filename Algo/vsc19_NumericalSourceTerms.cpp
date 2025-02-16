@@ -40,8 +40,8 @@ namespace vsc19
     {
       std::cout << "Rvalue reference version, can freely modify the original (avoid copy)\n";
 
-      assert(EMCNEILNbSections::value - 1 == aA.size()); //100
-      assert(EMCNEILNbSections::value - 1 == aQ.size()); // ditto
+      assert(DIM::value == aA.size()); //100
+      assert(DIM::value == aQ.size()); // ditto
 
       // Set b.c. ghost node value (need to modify our range)
       // actually we don't modify the original since we pass an rvalue reference
@@ -55,30 +55,33 @@ namespace vsc19
       aQ.push_back(std::forward<decltype(Q)>(Q)); // ditto
       aH.push_back(std::forward<decltype(H)>(H)); // ditto
 
+      std::cout << "Added value (physics boundary condition)\n";
+
       // assert(11==aA.size());
       assert(EMCNEILNbSections::value == aQ.size()); // 100+1
 
       double TermeS0{};
-      const auto Rh = 2.1;             // HydroUtils::R(A[j], B); debug purpose
+      const auto Rh = 2.1; // HydroUtils::R(A[j], B); debug purpose
       // pass-by-value?? i think so!! lambda return by-value by default
-      auto ManningFormula = [=](const auto &A, const auto &Q, const auto &n)
+      auto ManningFormula = [=](auto A, auto Q, auto n)
       {
         return cGravity<double> * n * n * Q * std::fabs(Q)/(A * A * std::pow(Rh, 4. / 3.));
       };
 
-      for (auto j = 0; j < EMCNEILNbSections::value - 1; j++) //< =99 computational nodes
+      std::cout << "Ready to compute the derivative about H-value and average\n";
+
+      for( auto j = 0; j < DIM::value; j++) //< =99 computational nodes
       {
         //const auto g = cGravity<double>;  variable template
         // now perform calculation with new added element, for example derivatve at second-order
-
         auto TermeSf = ManningFormula(aA[j], aQ[j], n[j]); // Manning (friction law)
 
         // (Nujic algorithm based on physics assumptions)
         // S0 = average x first-derivative of H
         if (j == 0)
-          TermeS0 = (0.5 * cGravity<double> * (aA[j + 1] + aA[j])) * (aH[j + 1] - aH[j]) / aDx;
+          TermeS0 = (0.5 * cGravity<float64> * (aA[j + 1] + aA[j])) * (aH[j + 1] - aH[j]) / aDx;
         else // central scheme at second-order
-          TermeS0 = (0.5 * cGravity<double> * (aA[j + 1] + aA[j - 1])) * (aH[j + 1] - aH[j - 1]) /(2. * aDx);
+          TermeS0 = (0.5 * cGravity<float64> * (aA[j + 1] + aA[j - 1])) * (aH[j + 1] - aH[j - 1]) /(2. * aDx);
 
         aS[j] = (TermeSf - TermeS0);
     } // for-loop

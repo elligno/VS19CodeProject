@@ -1,32 +1,193 @@
-// C++ include
+// C++ includes
 #include <list>
-// App includes
-#include "../Classes/valarrField1D.h"
+//#include <compare> spaceship operator <=>
+// Packages includes
+//#include "../Classes/valarrField1D.h"
+#include "../Classes/vsc19_RealNumArray.h"
 #include "../Classes/vsc19_SectionFlow.h"
+#include "../Algo/vs19_numScheme.hpp"
+#include "../Algo/vs19_HLLAlgorithm.hpp"
 #include "../Algo/vsc19_EmcilTreatmentAlgo.hpp"
- 
-namespace vsc19 {
+// 
+#include "../vs19_UniversalConst.hpp"
 
-   void testTreatmentSrc2() 
-   {
-       //using namespace vsc19;
+#if 0
+ //   Say for example that you have a custom container type in your codebase called SmallVector that, 
+ //  like std::vector, can be initialized by passing it two iterators denoting a range. We can write 
+ //  this with concepts from <iterator> and <concepts> as follows:
+template <std::semiregular T>
+struct SmallVector {
+  template <std::input_iterator I>
+    requires std::same_as<T, std::iter_value_t<I>>
+  SmallVector( I i, std::Sentinel<I> auto s ) {
+    // ...push back all elements in [i,s)
+  }
+};
+
+// Likewise, this type can get a constructor that takes a range directly 
+// using concepts defined in the new <ranges> header:
+// ... as before
+  template <std::InputRange R>
+    requires std::Same<T, std::range_value_t<R>>
+  explicit SmallVector( R && r )
+  : SmallVector(std::ranges::begin(r),
+                  std::ranges::end(r)) {
+  }
+};
+
+      // "for_each" creates a new view by applying a
+// transformation to each element in an input
+// range, and flattening the resulting range of
+// ranges.
+// (This uses one syntax for constrained lambdas
+// in C++20.)
+inline constexpr auto for_each = [] <Range R, Iterator I = std::iterator_t<R>,
+     std::indirectly_unary_invocable<I> Fun>(R&& r, Fun fun)
+        requires std::range<std::indirect_result_t<Fun, I>> 
+        {
+      return std::forward<R>(r)
+        | std::views::transform(std::move(fun))
+        | std::views::join;
+  };
+  #endif
+
+
+namespace vsc19 
+{
+    // ...
+    void testTreatmentSrc2() 
+    {
+       namespace rng = std::ranges;
+       
+       // using namespace vsc19;
        std::list<SectionFlow> myListOfSectionFlow;
-       myListOfSectionFlow.push_back(SectionFlow{1, 0.});
-       myListOfSectionFlow.push_back(SectionFlow{2, 0.1});
-       myListOfSectionFlow.push_back(SectionFlow{3, 0.2});
-       myListOfSectionFlow.push_back(SectionFlow{4, 0.3});
-       myListOfSectionFlow.push_back(SectionFlow{5, 0.4});
-
+       myListOfSectionFlow.push_back(SectionFlow{1, 0., 1.});
+       myListOfSectionFlow.push_back(SectionFlow{2, 0.1, 1.});
+       myListOfSectionFlow.push_back(SectionFlow{3, 0.2, 1.});
+       myListOfSectionFlow.push_back(SectionFlow{4, 0.3, 1.});
+       myListOfSectionFlow.push_back(SectionFlow{5, 0.4, 1.});
+ 
+       // use std invoke C++17 (check values)
+       rng::for_each(myListOfSectionFlow, &SectionFlow::printSectionInfo);
+     //  rng::sort( myListOfSectionFlow, rng::less{}, &SectionFlow::m_id);
+ 
        // create shared ptr grid
-        auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
+       auto grid1Dptr = std::make_shared<vsc19::gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
+ 
+       // one-dimensional scalar field
+       scalarField1D w_scal1D{grid1Dptr, std::string{"scalar field 1D"}};
+       auto &w_valu = w_scal1D.values();
+       auto begVal = rng::begin(w_scal1D.values());
+       auto endVal = rng::end(w_scal1D.values());
+       std::fill(rng::begin(w_scal1D.values()), rng::end(w_scal1D.values()), 2.3);
+       std::vector<double> w_contRng;
+       w_contRng.reserve(w_scal1D.grid().getNoPoints());
+       rng::fill(w_contRng, 1.);
+       // for our test just make a field from initial value (contiguous range concept)
+       scalarField1D w_contRngScal1D{grid1Dptr, std::string{"scalar field 1D"}, w_contRng};
+       auto w_ptrRng = new double[DIM::value];
+  //     std::fill();
+       std::valarray<double> w_vablarr(DIM::value);  // zero initialization
+       scalarField1D w_ptRngScal1D{grid1Dptr, std::string{"scalar field 1D"}, w_vablarr};
+       vsc19::RealNumArray<double> w_numArray(DIM::value,w_ptrRng); // in-house fast-floating point array
+       if( rng::sized_range<decltype(w_numArray)>)
+       {
+         scalarField1D w_numRngScal1D{grid1Dptr, std::string{"scalar field 1D"}, w_numArray};
+       }
+       else {
+          std::cerr << "NumArray not a sized range\n";
+       }
+       // dynamic span (provide an interface to read/write elements stored in contiguous memory)
+       std::span w_dynExtent{w_ptrRng, DIM::value}; // cheap to copy
+       scalarField1D w_spnRngScal1D{grid1Dptr, std::string{"scalar field 1D"}, w_dynExtent};
+       
+       delete [] w_ptrRng;
+ 
+       // subrange{vec} deduces the iterator and sentinel (use deduction guide)
+       // template parameters from the range 'w_contRng', and since subrange is 
+       // tuple-like, we can unpack the iterator/sentinel pair using structured bindings
+       auto [begIter,endIter] = rng::subrange{w_contRng}; 
+      // auto begIter = rng::begin(w_contRng);
+      // auto endIter = rng::end(w_contRng);
+ 
+       ListSectionFlow w_testList;
+       w_testList.add(SectionFlow{1, 0., 1.});
+ 
+       SectionFlow w_sectionFlow1{1, 0., 1.};
+       SectionFlow w_sectionFlow2{1, 0., 1.};
+       // check equality operator
+       auto Sectequal = w_sectionFlow1 == w_sectionFlow2;
+       // not sure about this one
+       // auto strOrder = w_sectionFlow1<=>w_sectionFlow2;
+       if (auto strOrder = w_sectionFlow1 <=> w_sectionFlow2; strOrder == 0) // is that make sense??
+       {
+          std::cout << "These 2 section flow are equal and ordered\n";
+       }
+    } 
 
-        // one-dimensional scalar field
-        vsc19::scalarField1D w_scal1D{grid1Dptr, std::string{"scalar field 1D"}};
-        auto &w_valu = w_scal1D.values();
-        auto begVal = std::begin(w_scal1D.values());
-        auto endVal = std::end(w_scal1D.values());
-        std::fill(std::begin(w_scal1D.values()), std::end(w_scal1D.values()), 2.3);
-        // for our test just make a copy
-   //     vsc19::scalarField1D w_cpyScal1D{}w_scal1D;
-   }
-} // End of namespace
+
+  // some tests with range and other concept of modern C++
+  void testHllSchemeImpl() 
+  {
+    namespace rng = std::ranges;
+
+    // create shared ptr grid
+    auto grid1Dptr = std::make_shared<gridLattice1D>(std::string{"d=1 [0,1] [0:99]"});
+    // one-dimensional scalar field
+    scalarField1D w_scal1D{grid1Dptr, std::string{"scalar field 1D"}};
+    auto sizValues = w_scal1D.values().size();
+    // auto &w_valu = w_scal1D.values();
+    //   auto begVal = std::begin(w_scal1D.values());
+    //   auto endVal = std::end(w_scal1D.values());
+    // shall be a range
+    if constexpr (rng::range<decltype(w_scal1D)>) // concept C++20
+    {
+      std::cout << "ScalarField is a range, use range algorithm\n";
+
+      rng::fill(w_scal1D, 1.);
+      rng::fill_n(rng::next(rng::begin(w_scal1D),
+                            w_scal1D.values().size() / 2),
+                  w_scal1D.values().size() / 2, 0.5);
+
+      // print shock location values (debugging purpose)
+      auto w_shockView = w_scal1D.asStdVector() | std::views::drop(48) | std::views::take(4);
+      std::cout << "Valaues at shock llocation " << w_shockView[0] << "  " << w_shockView[1]
+                << "  " << w_shockView[2] << "  " << w_shockView[3] << "\n";
+
+      // to modify the scalar field I need to use the 'all' adaptor/factory view
+      // return a ref_view (reference semantic) when pass a lvalue. Below I used
+      // 'counted' not a reference semantic it doesn't modify scalar Field
+      auto testVwsField = std::views::all(w_scal1D) | // convert a range (lvalue) as a ref_view
+                          std::views::transform([](double aVal)
+                                                { return 2. * aVal; });
+
+      auto w_midView = std::ranges::next(testVwsField.begin(), 50);
+      for (auto pos = w_midView; pos != testVwsField.end(); ++pos)
+      {
+        std::cout << "Views values are :" << *pos << '\n';
+      }
+
+      //   auto viewTest = std::views::counted( std::ranges::next(std::ranges::begin(w_scal1D.values()),
+      //   w_scal1D.values().size()/2),50) |
+      //  std::views::transform([] (double_t aValue) {return aValue-0.5;});
+
+      std::cout << "scalar field of size : " << w_scal1D.values().size() << '\n';
+      std::cout << "scalar field vector of size : " << w_scal1D.asStdVector().size() << '\n';
+    }
+    else
+    {
+      std::cout << "ScalarField is not a range, use range algorithm\n";
+      std::fill(std::begin(w_scal1D.values()), std::end(w_scal1D.values()), 2.3);
+    }
+
+    std::vector<double> w_fieldWithBc(w_scal1D.asStdVector()); // rvalue move ctor
+    w_fieldWithBc.push_back(0.3);                              // physical b.c. (open boundary at right far end)
+    // calling a version of the algorithm (here we pass an rvalue as the first arg)
+    // we also use the metaprogramming constant C++17 feature (it call another algo)
+    hllSchemeFlux(std::move(w_fieldWithBc),                  // is that make sense?? it sure is!!! xvalue
+                  w_scal1D.grid().Delta(), cGravity<double>, // template variable
+                  EMCNEILNbSections::value);                 // metaprogramming constant
+
+    std::cout << "Finished testing our new C++20 algorithm\n";
+  }
+}

@@ -97,7 +97,7 @@ namespace vsc19
     // SFINAE version C++17 (kind of)
     std::cout << firstArg << '\n';  // print first element
     //if( sizeof... (Args)>0)  error with sizeof == 0
-    if constexpr (sizeof... (Args) > 0) // fine no code instantiaded for sizeof == 0
+    if constexpr (sizeof... (Types) > 0) // fine no code instantiaded for sizeof == 0
       print(args...);      // no print() function for no argument declared 
   }
 
@@ -139,26 +139,31 @@ namespace vsc19
    * @param ...args
   */
   template<typename T, typename... Types>
-  void print(T firstArg, Types... args)
+  void printjb(T firstArg, Types... args)
   {
     std::cout << firstArg << '\n';  // print first element
     print(args...);
   }
 
   // just trying to implement a print function with C++17 feature
-  // variadic template and folder expression 
+  // variadic template and fold expression 
   template<auto Sep = ' ', typename First, typename... Args>
   void print17( const First& aFirst2Print, const Args&... aArgs)
   {
     std::cout << aFirst2Print;
 
     // use auto keyword in lambda expression
-    auto addSpace = [] (const auto& arg) 
+    auto outWithSep = [] ( const auto& arg) 
     {
       std::cout << Sep << "arg"; 
     }
 
     // use folder expression to return
-    (..., addSpace(aArgs));
+   // IMPORTANT the expansion '...' must have no white space
+   //  with comma and lambda, stick all together, otherwise
+   // it doesn't compile!!!
+    ( ...,outWithSep(aArgs));
+    
+    std::cout << '\n';
   }
 } // End of namespace

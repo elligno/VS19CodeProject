@@ -57,7 +57,7 @@ namespace vsc19 {
      *  @return Type smart pointer (shared resource)
      */  
      template <typename T, typename... Args>
-     std::shared_ptr<T> factoryCreator( Args&& ...aArgs)
+     decltype(auto) factoryCreator( Args&& ...aArgs)
      {
          return std::shared_ptr<T>{ new T{ std::forward<Args>(aArgs)...}};
      }

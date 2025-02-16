@@ -5,9 +5,9 @@
 #include <vector>
 #include <map>
 
-namespace emcil 
+namespace vsc19 
 {
-	/** This is a simple wrapper around putenv() and getenv() proving 
+	/** @brief This is a simple wrapper around putenv() and getenv() proving 
 	  * persistent storage for the values passed to putenv() (in the form of �name=value�) 
   */
 	class EnvVariablesManager 
@@ -16,7 +16,7 @@ namespace emcil
 		using VariableContainer = std::vector<char>;
 		using Variables = std::map<std::string, VariableContainer>;
 
-		EnvVariablesManager() {}
+		EnvVariablesManager()=default; // need it?
 
 		// This class is not copyable.
 		EnvVariablesManager(const EnvVariablesManager&)=delete;

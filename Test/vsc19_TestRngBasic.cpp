@@ -40,10 +40,12 @@ namespace vsc19
                std::views::all( std::ranges::next(w_newField.cbegin()) , std::ranges::prev(w_newField.cend()));
 
             // could we use views to print some field values?
+            // i do think so, looks like by defining STL-like API for our scalar field
+            // we can use it as range or view (iterate through all its element) 
             // C++17 feature Class Template Argument Deduction (CTAD)
-            for (const auto &elem : w_newField | std::views::take(5))
+            for ( const auto &elem : w_newField | std::views::take(5))
             {
-                std::cout << "Printing five elements\n";
+                std::cout << "Field value is: " << elem << "\n";
             }
         }
         else

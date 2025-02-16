@@ -93,7 +93,7 @@ public:
 
 		// set the values of the field  
 		void values( RealNumArray<double>& new_array);
-    void values( RealNumArray<double>&& new_array); // move semantic
+    void values( RealNumArray<double>&& new_array); // move semantic (don't make sense!!!)
 
     // printing the field values
     void print( std::ostream& aValues2Print);
@@ -108,3 +108,9 @@ public:
     scalarField& operator*= ( const float64 aVal);
 	};
 } // End of namespace
+
+#if 0 //C++20 concept feature 
+// some test about making our numerical type as view  (satisfy the concept of view)
+// constant complexity (cheap to copy/move) specialize the template
+ constexpr inline const bool std::ranges::enable_view<vsc19::scalarField> = true;
+#endif //0
