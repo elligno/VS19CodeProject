@@ -68,8 +68,8 @@ decltype(auto) StVenant1D_Incomplete_Flux( Range& aU1, Range& aU2)
 	//  passing a const object to a template taking T& parameter is safe:
 	//  the consteness of the object is part of the type deduced for T.
 	static_assert( std::is_const_v<decltype(aU1)>, "Constness of the object");
-	static_assert( !std::empty(aU1) && !std::empty(aU2), "Incomplete Flux: range empty");
-	static_assert(  std::size(aU1) == std::size(aU2),  "Incomplete Flux: range not equal size");
+	static_assert( !std::ranges::empty(aU1) && !std::ranges::empty(aU2), "Incomplete Flux: range empty");
+	static_assert(  std::ranges::size(aU1) == std::ranges::size(aU2),  "Incomplete Flux: range not equal size");
 
 	return (aU2 * aU2) / aU1;
 }

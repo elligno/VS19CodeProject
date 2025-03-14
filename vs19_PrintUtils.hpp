@@ -5,7 +5,7 @@
 #include <iostream>
 #include <tuple>
 // app include
-#include "vs19_Utilities.hpp"
+//#include "vs19_Utilities.hpp"
 
 /**
  * @brief Different version of generic print function for tuple.
@@ -158,12 +158,17 @@ namespace vsc19
       std::cout << Sep << "arg"; 
     }
 
-    // use folder expression to return
+    // use fold expression to return
    // IMPORTANT the expansion '...' must have no white space
    //  with comma and lambda, stick all together, otherwise
-   // it doesn't compile!!!
-    ( ...,outWithSep(aArgs));
+   // it doesn't compile!!! still doesn't compile
+    (... , outWithSep(aArgs)) << '\n';
     
-    std::cout << '\n';
+  //  (..., [] ( const auto& arg) -> decltype(auto)
+  //   {
+  //     std::cout << Sep << "arg"; 
+  //   }) << '\n'; 
+    
+    //std::cout << '\n';
   }
 } // End of namespace

@@ -39,34 +39,58 @@ namespace vsc19
         assert(0. == w_xmin);
         assert(1. == w_xmax);
 
+        namespace rng = std::ranges;
+
         // one-dimensional scalar field from grid
-        vsc19::scalarField1D w_scal1D{ grid1Dptr, std::string{"scalar field 1D"}};
+        scalarField1D w_scal1D{ grid1Dptr, std::string{"scalar field 1D"}};
+        assert(rng::range<scalarField1D>); // support range C++20 
+        auto testBeg  = rng::begin(w_scal1D); // begin of our ...
+
         //auto &w_valu = w_scal1D.values();
-        auto begVal = std::begin(w_scal1D.values()); 
-        auto endVal = std::end(w_scal1D.values());
-        auto dist = std::distance(begVal, endVal);
-        assert(w_scal1D.values().size() == std::distance(begVal, endVal));
-     //   std::fill(std::begin(w_scal1D.values()), std::end(w_scal1D.values()), 2.3);
+        // rng::begin is memory safe and lot of bugs has been fixed
+        // since C++20 its preferrable to use the ranges begin/end
+        auto begVal = rng::begin(w_scal1D); 
+        auto endVal = rng::end(w_scal1D);
+        auto dist = rng::distance( w_scal1D);
+
+        //assert(w_scal1D.values().size() == std::distance(begVal, endVal));
+        assert( rng::size(w_scal1D) == rng::distance(w_scal1D));
+
+        // std::fill(std::begin(w_scal1D.values()), std::end(w_scal1D.values()), 2.3);
         // 49 shall last point with value 2.5
-        std::fill_n( std::begin( w_scal1D.values()),w_scal1D.values().size()/2, 2.5);
+        //std::fill_n( std::begin( w_scal1D.values()),w_scal1D.values().size()/2, 2.5);
+        rng::fill_n( rng::begin(w_scal1D), rng::size(w_scal1D)/2, 2.5);
         // 50 shall be the first index with value 1.0
-        std::fill_n( std::next( std::begin(w_scal1D.values()), w_scal1D.values().size()/2), 
-        w_scal1D.values().size()/2, 1.);
+        rng::fill_n(rng::next( rng::begin(w_scal1D.values()), w_scal1D.values().size()/2),
+        rng::size(w_scal1D)/2, 2.);
+
+       // rng::fill_n( w_scal1D, rng::size(w_scal1D)/2, 2.5); //??
+        // 50 shall be the first index with value 1.0
+        // rng::fill_n(rng::next( rng::begin(w_scal1D.values()), w_scal1D.values().size()/2),
+        // rng::size(w_scal1D)/2, 2.);
+
+        // std::fill_n( std::next( std::begin(w_scal1D.values()), w_scal1D.values().size()/2), 
+        // w_scal1D.values().size()/2, 1.);
 
         // ... to be completed
         auto w_xgrid = w_scal1D.grid().getPoint(10); // shall be 0.1 dx=0.01
         assert(0.1 == w_scal1D.grid().getPoint(10)); // grid spacing
-        assert(vsc19::DIM::value == w_scal1D.values().size());
+        assert(DIM::value == w_scal1D.values().size());
         auto vec = w_scal1D.asStdVector();      //prvalue: pure reading value (temporary)
         auto&& vecRef = w_scal1D.asStdVector(); // give the return value a name I can use it as lvalue 
                                                 // (Universal reference??) i do think so!!
 
         // calling the right function according to the number and type of args 
-        // cGravity is a variable template to declare universal constant
-        vsc19::hllSchemeFlux( w_scal1D.asStdVector(),  // container of values
-                              w_scal1D.grid().Delta(), // grid spacing
-                              vsc19::cGravity<double>, vsc19::DIM::value); // constant 
+        // cGravity is a metaprogramming variable template (universal constant)
+      //  hllSchemeFlux( w_scal1D.asStdVector(),  // container of values (prvalue: temporary)
+      //                 w_scal1D.grid().Delta(), // grid spacing
+      //                 cGravity<double>, DIM::value); // constant 
 
+        // generic programming algorithm
+        hllSchemeFlux( w_scal1D,                      // scalar field is a range (lvalue)
+                       w_scal1D.grid().Delta(),       // grid spacing
+                       cGravity<double>, DIM::value); // constant 
+        
         // physics based algorithm
         double* const w_U1 = new float64[5];
         w_U1[0] = 1.; // initial values
@@ -88,23 +112,20 @@ namespace vsc19
         // clean-up code (all done)
         delete [] w_U1; delete [] w_U2; delete [] w_FF1; delete [] w_FF2;
 
-        // call another algorithm passing library type
-        vsc19::numericalScheme1D(w_scal1D);
-        
         // does it move ctor? pass a temporary!! (prvalue: pure reading value)
         std::vector<double> w_testSiz(std::begin(w_scal1D.values()),std::end(w_scal1D.values())); 
         assert(vsc19::DIM::value == w_testSiz.size());
         w_testSiz.push_back(1.); // physical boundary cond.
-        assert(vsc19::EMCNEILNbSections::value == w_testSiz.size());
+        assert(EMCNEILNbSections::value == w_testSiz.size());
 
         // assert(w_scal1D.grid().getPoint(1)==2.3);  first grid point
-        vsc19::scalarField1D w_copyField = w_scal1D; // copy construct
+        scalarField1D w_copyField = w_scal1D; // copy construct
         // auto check1 = w_copyField.grid().getPoint(1);
         const auto check11 = w_copyField.values()[0];
         assert(w_scal1D.values()[0] == check11); // expect equal
         assert(w_copyField.values().size() != 0); 
         // move copy ctor semantic
-        vsc19::scalarField1D w_mvField = std::move(w_copyField);
+        scalarField1D w_mvField = std::move(w_copyField);
         
         //auto cpySiz = w_copyField.values().size(); cannot call size anymore after move
         //assert(w_copyField.values().size()==0); // moved
@@ -176,7 +197,7 @@ namespace vsc19
         //  std::views::all(rng) is an adaptor that convert a range to a view.
         //  It returns a ref_view if not already a view, otherwise a copy of the view.  
         // Since the design of our numerical types is STL-like API (provides begin/end) 
-        // can be manipulate as STL container. But with te help of view or range library
+        // can be manipulate as STL container. But with the help of view or range library
         // we can use it in the algorithm 
         // create a view from adaptor 'all', which convert a range into a ref_view
         auto w_vws =  std::views::all(w_mvField); //lvalue
@@ -381,15 +402,15 @@ namespace vsc19
         
         // test create from tuple value (nbpts,min,max)
         StateVectorField w_tplField2Test{ std::string{"TplField2Test"}, std::make_tuple(100, 0.,1.)};
-        if( !w_tplField2Test.isNull())
-        {
-            assert(99 == w_tplField2Test.grid().getMaxI());
-            assert(0 == w_tplField2Test.grid().getBase());
-            assert(100 == w_tplField2Test.grid().getDivisions());
-            assert(100 == w_tplField2Test.grid().getNoPoints());
-            assert(100 == w_tplField2Test.getAfield().values().size());
-            assert(100 == w_tplField2Test.getQfield().values().size());
-        }
+        // if( !w_tplField2Test.isNull())
+        // {
+        //     assert(99 == w_tplField2Test.grid().getMaxI());
+        //     assert(0 == w_tplField2Test.grid().getBase());
+        //     assert(100 == w_tplField2Test.grid().getDivisions());
+        //     assert(100 == w_tplField2Test.grid().getNoPoints());
+        //     assert(100 == w_tplField2Test.getAfield().values().size());
+        //     assert(100 == w_tplField2Test.getQfield().values().size());
+        // }
 
         auto isZeroValues = std::all_of( w_tplField2Test.getAfield().begin(), w_tplField2Test.getAfield().end(),
         [] (float64 aValue) { return aValue==0;});

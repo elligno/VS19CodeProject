@@ -234,23 +234,23 @@ namespace vsc19
    * @param rem ...
    * @param aVector type value to print
    * @param newline return end of line 
-  */
+   */
   void printValarray( std::string_view rem, // cheap to copy
     const auto& aType2Print, bool newline = false)
-  {
-    // check if its a scalar by using type trait 
-    if constexpr( std::is_scalar_v<std::decay_t<decltype(aType2Print)>>)
-      std::cout << rem << " : " << aType2Print;
-    else // otherwise its a container
     {
-      for( std::cout << rem << " : { "; const auto vecElem : aType2Print)
+      // check if its a scalar by using type trait 
+      if constexpr( std::is_scalar_v<std::decay_t<decltype(aType2Print)>>)
+      std::cout << rem << " : " << aType2Print;
+      else // otherwise its a container
+      {
+        for( std::cout << rem << " : { "; const auto vecElem : aType2Print)
         std::cout << vecElem << ' ';
-      std::cout << '}';
+        std::cout << '}';
     }
     std::cout << (newline ? "\n" : ";  ");
   }
-
-#if 0  // o = printValarray
+  
+  #if 0  // o = printValarray
   int main()
   {
     std::valarray<int> x, y;

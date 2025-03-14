@@ -20,6 +20,20 @@
 
 namespace vsc19 
 {
+   /**
+    * @brief C++17 new feature (invoke)
+    * @tparam Callable 
+    * @tparam ...Args 
+    * @param aCalbl 
+    * @param ...arg 
+  */
+   template <typename Callable, typename... Args>
+   decltype(auto) call(Callable &&aCalbl, Args &&...args)
+   {
+     std::invoke(std::forward<Callable>(aCalbl), // call passed to callable with
+                 std::forward<Args>(args)...);   // all additional passed args
+   }
+
   /**
    * @brief Convert string to int if possible
    * @param aStrv string to convert
@@ -226,7 +240,7 @@ void printAddspace10( const First& aFirstElem, const Args& ...args)
   // avoid unnecessary copy of 'aArg' since lambda return objects by value (default)
   (std::cout << ... << [] (const Args& aArg) -> decltype(auto) 
   {
-     std::cout << ' ';
+     std::cout << '---';
      return aArg;
   }(args)) << '\n';
 }

@@ -43,7 +43,6 @@
             "command": "cl.exe",
             "args": [
                 "${workspaceFolder}\\obj\\*.obj",
-                "/link",
                 "${workspaceFolder}\\bin\\BaseNumericalTypes.lib",
                 "/Fe:${workspaceFolder}\\TestVS19main"
             ]          

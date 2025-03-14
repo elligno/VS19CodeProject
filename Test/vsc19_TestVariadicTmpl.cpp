@@ -99,16 +99,23 @@ void myFunction(F func) {
 namespace vsc19 
 {
     using Nodal_Value = vs19::jbTpl<unsigned /*id*/, double /*A*/, double /*Q*/, double /*H*/>;
+    using Constraint_Node = vs19::jbTpl<unsigned /*id*/, double /*A*/, double /*Q*/, double /*H*/>;
+    using GNode = vs19::jbTpl<unsigned /*id*/, double /*x-coord*/>;
 
     void funcInt(int aVal) {std::cout << "Value is: " << aVal <<'\n'; }
     
-    void mkFrmTpl(int aInt1, int aInt2, int aInt3) 
+    void mkFrmTpl(int aInt1, int aInt2, int aInt3) noexcept // doesn't throw
     {
       aInt1 = 1+aInt2;
       std::cout << aInt3 << "\n";
     }
+    
+    void mkFrmNodl(int aInt1, double aDbl, double aDbl1, double aDbl2) 
+    {
+      std::cout << "testing invoke on function taking" << "\n";
+    }
 
-    void invokeWithNodalVar( vs19::jbTpl<unsigned,double,double,double> aTestNvar)
+    void invokeWithNodalVar( Nodal_Value aTestNvar)
     {
       // shall take a look on laptop vscode project about a utility to print tuple
       // it use std::apply, not what for 
@@ -146,41 +153,82 @@ namespace vsc19
     // Nodal variable concept (DamBreak++ Wave Simulator toolbox)
     void NodalVarTest()
     {
+   //   using MyNdal = vs19::jbTpl;
+
       // struct with tup[le attribute]
       // vsc19::jbTpl<float,double,double> defTpl;
       vs19::jbTpl<unsigned, float, double, double> testTplCtor(1, 1.f, 2.5, 4.2);
       auto tplSiz = testTplCtor.size();
       auto [id, A, Q, H] = testTplCtor.m_tpl; // C++17 structured binding
+      using tpl1 = std::tuple_element_t<1,decltype(testTplCtor.m_tpl)>;
+      static_assert(std::is_same_v<tpl1, float>);
+      static_assert(std::is_same_v<std::tuple_element_t<1, decltype(testTplCtor.m_tpl)>, float>);
+      using Ndatatype = std::tuple_element_t<1,decltype(testTplCtor.m_tpl)>;
+      std::pair<Ndatatype,Ndatatype> w_chkType = std::make_pair(1.f,2.f);
 
     //  using Nodal_Value = vs19::jbTpl<unsigned /*id*/, double /*A*/, double /*Q*/, double /*H*/>;
       std::vector<Nodal_Value> w_Uh; // nodal value at grid node (ndf: number of degree freedom)
-      w_Uh.reserve(3);
-      w_Uh.emplace_back(0, 1., 2.5, 4.2);   // id,A,Q,H
+      w_Uh.reserve(3); // Since C++17 return a ref (placement new)
+      auto& chk = w_Uh.emplace_back(0, 1., 2.5, 4.2);   // id,A,Q,H
       w_Uh.emplace_back(1, 2.4, 0.5, 14.2); // ditto
       w_Uh.emplace_back(2, 2., 20.5, 1.2);
       assert(3 == w_Uh.size());
-      auto check = w_Uh[0];
       // check some values (structured binding)
       auto [id0, Am, Qm, Hm] = w_Uh[0].m_tpl; // tuple 
-      auto checkNodeType = w_Uh[0].isTiedNode();
-      assert(checkNodeType);
-      auto valDbl = std::get<1>(w_Uh[0].m_tpl); // A
-      w_Uh[0] = Nodal_Value(3, 0., 0.5, 4.2); // assign ctor
-      w_Uh[0] = {3, 0.1, 0.45, 41.2};         // aggregagte tuple-like API
-      auto [id3, Am1, Qm1, Hm1] = w_Uh[0].m_tpl;
-      // just testing
-    //  assert( std::is_invocable_v<mkFrmTpl,int,double,double,double>);
+      assert(!w_Uh[0].isTiedNode());
+      auto valDbl = std::get<1>(w_Uh[0].m_tpl);   // A-value
+      w_Uh[0] = Nodal_Value{3, 0., 0.5, 4.2};     // assign ctor
+      w_Uh[0] = {3, 0.1, 0.45, 41.2};             // aggregagte tuple-like API
+      auto [id3, Am1, Qm1, Hm1] = w_Uh[0].m_tpl;  // structured binding
+     // auto w_dat = w_Uh[0].nodeData();
+
+      //tied node (ghost node) test basic operator support
+      Nodal_Value w_tiedNode(DIM::value,Am1,Qm1,Hm1,true); // ghost node
+      Nodal_Value w_cpyNdalV = w_tiedNode; // cpy construct
+      assert(w_cpyNdalV.isTiedNode()); // must equal
+      w_tiedNode = w_Uh[0]; // assign ctor node_id=3
+      assert(!w_tiedNode.isTiedNode()); // that's right!!!
+      auto cmpNdl = w_cpyNdalV <=> w_tiedNode; // equal node (greater >0)
+      // sanity check comparison category C++20 
+      if( auto cmpNdl = w_cpyNdalV <=> w_tiedNode; cmpNdl!=0)
+      {
+        std::cout << "These 2 nodal value type are not equal\n";
+      }
       
-      // basic tests 
+      // move semantic??? yes it is supported!!
+      static_assert(std::is_move_constructible_v<Nodal_Value>);
+      static_assert(std::is_move_constructible_v<decltype(w_cpyNdalV.m_tpl)>);
+      //  static_assert(std::is_trivially_move_constructible_v<Nodal_Value>);
+      Nodal_Value w_mvNode = std::move(w_tiedNode);
+      auto myTpl = w_cpyNdalV.m_tpl;
+      auto mvTpl  = std::move(myTpl);
+      //auto w_mvNode = std::move(w_cpyNdalV).m_tpl;
+      auto asd = w_cpyNdalV.m_tpl;
+      auto&& w_dlaydMv = std::move(w_tiedNode);
+      
+      GNode w_rightNode{0,0.,true}; // this node is not a tied anymore
+      auto isGnodeTied = w_rightNode.isTiedNode();
+      int int1=1,int2=2,int3=3;
+      using funcNoExcpt = void (*)(int,int,int) noexcept;
+      // see N. Josuttis book Move Semantic p. 130
+      funcNoExcpt myFunc = std::move(mkFrmTpl); // assign a pointer-to-function
+      
+      // testing type trait (compile time evaluation) need to use static assert
+      // assert that this function can be invoked and not throwing any exception 
+      static_assert( std::is_nothrow_invocable_v<funcNoExcpt,decltype(int1),decltype(int2),decltype(int3)>);
+      std::invoke(myFunc,int1,int2,int3); // invoke the function 
+
+      // basic tests make_from_tuple?? what does it do? std::make_tuple(1,2.,3.2,.4)
       auto w_nvar17 = std::make_from_tuple<Nodal_Value>(std::make_tuple(1,2.,3.2,.4));
+      
       // is it possible? it sure is!!!
       invokeWithNodalVar(std::make_from_tuple<Nodal_Value>(std::make_tuple(1,2.,3.2,.4)));
 
-
       // testing extracting values from U_h as we usually do
+      //auto w_getA =  lambda function (doesn't)
       std::function<double(const Nodal_Value &)> w_getA =
           []( const Nodal_Value &aVal) -> double
-      { return std::get<1>(aVal.m_tpl); };
+          { return std::get<1>(aVal.m_tpl); };
 
       // std::function<double(const Nodal_Value &)> w_getQ =
       //     [](const Nodal_Value &aVal) -> double { return aVal[1]; };
@@ -192,8 +240,8 @@ namespace vsc19
       //   case NodalValComp::A: {
       // using delegate function
       using namespace boost;
-      std::vector<double> aVec2Fill;
-      aVec2Fill.reserve(3);
+      std::vector<double> aVec2Fill(3);
+      //aVec2Fill.reserve(3);
       aVec2Fill.assign( make_transform_iterator(w_Uh.begin(), w_getA),
                         make_transform_iterator(w_Uh.end(), w_getA));
 
@@ -205,5 +253,10 @@ namespace vsc19
       //  }
       // sanity check
       assert(3 == aVec2Fill.size());
+
+      //testing variadic template pattern (2 pair fo string,int,float)
+      // number of tuuple element is 2!!
+      vs19::TestTplPtrn<int,float> w_testPtrn;
+      w_testPtrn.m_tplPrmsPtrn = {{std::string{"pair1"},1},{std::string{"pair2"},2.f}};
     }
 } // End of the namespace

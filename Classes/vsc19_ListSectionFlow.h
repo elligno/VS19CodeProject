@@ -29,15 +29,43 @@ namespace vsc19
     /** alias */
     using vecpPhysObj  = std::vector<SectionFlow>;
     using vec_sizetype = vecpPhysObj::size_type;
-    using vec_valtype  = vecpPhysObj::value_type;
-    using vec_iter     = vecpPhysObj::iterator;
-    using vec_citer    = vecpPhysObj::const_iterator;
+    using value_type  = vecpPhysObj::value_type;
+    using iterator     = vecpPhysObj::iterator;
+    using const_iterator = vecpPhysObj::const_iterator;
+    using reference    = value_type&;
+    using const_reference = const value_type&;
+    using range_diff_type = ptrdiff_t;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /** some utility method*/
-    vec_iter begin() { return m_listOfSect.begin(); }
-    vec_iter end() { return m_listOfSect.end(); }
-    vec_citer begin() const { return m_listOfSect.cbegin(); }
-    vec_citer end()   const { return m_listOfSect.cend(); }
+    // vec_iter begin() { return m_listOfSect.begin(); }
+    // vec_iter end() { return m_listOfSect.end(); }
+    // vec_citer cbegin() const { return m_listOfSect.cbegin(); }
+    // vec_citer cend() const { return m_listOfSect.cend(); }
+
+    /** alias */
+    // using vec_sizetype = std::vector<SectFlow *>::size_type;
+    // using vec_valtype = std::vector<SectFlow *>::value_type;
+    // using vec_iter = std::vector<SectFlow *>::iterator;
+    // using vec_citer = std::vector<SectFlow *>::const_iterator;
+    // using vec_riter = std::reverse_iterator<vec_iter>;
+    // using vec_rciter = std::reverse_iterator<vec_citer>;
+
+    // **************** STL-like Container ***************
+    iterator begin() { return m_listOfSect.begin(); }
+    iterator end()   { return m_listOfSect.end(); }
+    const_iterator cbegin() const { return m_listOfSect.cbegin(); }
+    const_iterator cend()   const { return m_listOfSect.cend(); }
+    
+    reverse_iterator rbegin()  
+    { return std::reverse_iterator<std::vector<SectionFlow>::iterator>(end()); }
+    reverse_iterator rend()   
+    { return std::reverse_iterator<std::vector<SectionFlow>::iterator>(begin()); }
+    const_reverse_iterator crbegin() const 
+    { return std::reverse_iterator<std::vector<SectionFlow>::const_iterator>(cend()); }
+    const_reverse_iterator crend()   const 
+    { return std::reverse_iterator<std::vector<SectionFlow>::const_iterator>(cbegin()); }
 
   public:
     /** pass by pointer since we want a reference semantic
@@ -51,7 +79,8 @@ namespace vsc19
     bool contains( const SectionFlow& aSectF2Find)
     {
       // use the find algorithm, of the stl ()
-      if( std::find( m_listOfSect.begin(), m_listOfSect.end(), aSectF2Find) != m_listOfSect.end())
+      if( auto pos = std::find( m_listOfSect.begin(), m_listOfSect.end(), aSectF2Find); 
+             pos != m_listOfSect.end())
       {
         // found something
         return true;
@@ -68,8 +97,10 @@ namespace vsc19
       return m_listOfSect[aIdx];
     }
 
-    bool isEmpty() const { return m_listOfSect.empty(); }
+    [[nodiscard]] bool isEmpty() const noexcept { return m_listOfSect.empty(); }
     vec_sizetype size() const { return m_listOfSect.size(); }
+    /** */
+    void shrink2Fit()     { m_listOfSect.shrink_to_fit(); }
 
     // returns make_iterator_range (read only)
     vecpPhysObj getList() const
@@ -82,6 +113,11 @@ namespace vsc19
     {
       return m_listOfSect;
     }
+
+    // Return both ends 
+    const SectionFlow front() const { return m_listOfSect.front(); }
+    const SectionFlow back() const  { return m_listOfSect.back();  }
+
     /** return if all sections are frictionless*/
     bool isFrictionLess() const
     {

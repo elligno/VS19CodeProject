@@ -50,7 +50,7 @@ namespace vsc19
       // (corner stone of the move semantic)
       //
       // C++17 structured binding (retrieve boundary values for the ghost nodes)
-      auto &&[A, Q, H] = getBCFromTpl();          // universal reference (yes!!)
+      auto &&[A, Q, H] = getBCFromTpl();          // universal reference (yes!!) delayed temporaries!!
       aA.push_back(std::forward<decltype(A)>(A)); // adding ghost node to the temporary
       aQ.push_back(std::forward<decltype(Q)>(Q)); // ditto
       aH.push_back(std::forward<decltype(H)>(H)); // ditto
@@ -128,6 +128,8 @@ namespace vsc19
       S[j] = (TermeSf - TermeS0);
     }//for-loop
   }
+  
+  #if 0 // future deveopment
   std::valarray<double> TreatmentSource2( const scalarField1D& aQ, const scalarField1D& aA, 
   const ListSectionFlow& aListSectFlow) 
   {
@@ -138,12 +140,11 @@ namespace vsc19
     //  the future we change the impl., client won't notice it. But those 
     //  old impl are not accessible by the client.
     //  Instead of free functions like those above, could be a static class.
-#if 0 // future deveopment
     // lvalue test
        std::vector w_vecA {1.2,3.5,54.2,23.4,2.};   //lvalue
        std::vector w_vecQ {11.2,32.5,4.2,3.4,2.12}; // lvalue
        fwdSrcAlgo(w_vecByRef, w_vecA, w_vecQ, n, dx, 5); //value case
-#endif
-    return std::valarray<double>(); // debugging purpose
+       return std::valarray<double>(); // debugging purpose
   }
+#endif
 } // End of namespace

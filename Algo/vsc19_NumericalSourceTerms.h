@@ -5,9 +5,13 @@
 #include <valarray>
 #include <vector>
 // App includes
-#include "../Classes/vsc19_ListSectionFlow.h"
-#include "../Classes/valarrField1D.h"
+// #include "../Classes/vsc19_ListSectionFlow.h"
+// #include "../Classes/valarrField1D.h"
 
+namespace vsc19 {
+   class scalarField1D;
+   class ListSectionFlow;
+}
 namespace vsc19 
 {
   void TreatmentTermeS0( std::vector<double> aVec, double dx, int NbSections);              // { std::cout << "TreatmentTermeS0 with 3 arguments\n"; }

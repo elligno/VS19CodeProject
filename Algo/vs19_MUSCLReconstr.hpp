@@ -5,7 +5,7 @@
 namespace vs19 
 {
    /** @brief MUSCL reconstruction procedure of state variables at cell face 
-	 * @tparam NumArrayType (numerical array for fast floating-point array)
+	 * @tparam NumArrayType (fast floating-point array)
 	 * @tparam F slope limiter function
 	 * @param aU1 Range of (state variable)
 	 * @param aU2 Range of (state variable)

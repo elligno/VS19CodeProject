@@ -6,7 +6,7 @@
 #include "../Classes/Types2Test.h"
 //#include "../Classes/vs19_MinMod.hpp"
 #include "../Classes/vsc19_scalarField.h"
-//#include "../Classes/valarrField1D.h"
+#include "../Classes/valarrField1D.h"
 #include "../Classes/TestTemplVS19.hpp"
 #include "../Algo/vsc19_NumericalSourceTerms.h"
 #include "../Template17/vsc19_PerfectFwdAlgo.hpp"

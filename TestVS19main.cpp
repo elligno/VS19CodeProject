@@ -10,7 +10,7 @@
 #include <valarray>
 #include <vector>
 // App includes
-#include "Algo/vs19_numScheme.hpp"
+//#include "Algo/vs19_numScheme.hpp"
 #include "Template17/vs19_NodeVarTmpl.hpp"
 #include "Template17/vs19_Utilities.hpp"
 #include "Template17/vsc19_DbgLog.hpp"    // debug file logger
@@ -46,6 +46,8 @@ namespace vsc19 {
     void testHllSchemeImpl();
     void SomeCppBasicTests();
     void vectorFieldtest();
+    void testTreatmentSrc2();
+    void testvalArrField();
   //  void passShrdPtrRef( const std::shared_ptr<vsc19::scalarField1D>& aField2Modify);
     std::vector<vsc19::pairtimeline> 
      readDataFullResultFromFile(std::filesystem::path &aFile2read);
@@ -80,22 +82,26 @@ std::string getString() {return std::string{"JeanAutoTest"};}
 //   std::string w_localVar{"JeanAutoTest"};
 // } 
 
-// =============================================================
 //                    Main entry point
 // =============================================================
+// ======================= ======================================
 int main( int argc, char* argv[])
 {
-   vsc19::testHllSchemeImpl();
+  vsc19::NodalVarTest();
+  vsc19::testTreatmentSrc2();
+  vsc19::testScalarField1D();
+ // vsc19::testvalArrField();
+  vsc19::testHllSchemeImpl();
 
   using namespace std::string_literals;   // operator 's'
   using namespace std::literals::string_view_literals; // operator 'sv'
 
-    auto &&testjbAuto = getString(); // universal reference ()
+    auto &&testjbAuto = getString(); // universal reference (del ayed temporary)
     auto w_tmpStr{"tmpstr"s};
     // const auto& w_tmpStrcRef = {"tmpstrcRef"s}; // initializer_list!!! be carefull!!
     const auto &w_tmpStrcRef{"tmpstrcRef"s};
     auto &&testTmpstr = w_tmpStr; // ditto
-    auto &&cstref = w_tmpStrcRef;
+    auto &&cstref = w_tmpStrcRef; 
     //  auto&& retCref = getStringRef();
     std::cout << std::is_same_v<decltype(testjbAuto), std::string &&> << '\n'; // true
     std::cout << std::is_same_v<decltype(testTmpstr), std::string &> << '\n';  // true

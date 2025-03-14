@@ -1,8 +1,12 @@
 
 #include "../Template17/vs19_Utilities.hpp"
+#include "../Algo/vs19_numScheme.hpp"
 
 namespace vsc19 
 {
+    using funcptr = void (*)(int);
+    void hllTestCall(int aArg) {std::cout << "Testing \n";}
+
     void testCallIfCallable()
     {
         // Lambda function
@@ -27,9 +31,15 @@ namespace vsc19
            std::cout << "Function pointer called.n"; 
        };
 
-       // Pass the function pointer to the function template
-       myFunction(funcPtr);
+       void (*funcPtr1)(int aVal) = [](int aVal) { 
+        std::cout << "Function pointer called with this arg: " << aVal << "\n"; 
+       };
 
+    // Pass the function pointer to the function template
+       myFunction(funcPtr);
+       int aa=2;
+       funcptr w_callee = hllTestCall;
+       vsc19::call(w_callee,aa);
     // Uncommenting the following line will cause a compile-time error
     // myFunction(5); // Error: '5' does not satisfy std::invocable
     }

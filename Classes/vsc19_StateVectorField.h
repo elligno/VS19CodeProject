@@ -61,9 +61,9 @@ namespace vsc19
     explicit StateVectorField( const StateVector& aStateVec) 
     : m_name{ std::string{"pair-like"}},
       m_gridPrms{ "d=1 [0,1] [0:99]" },
-      m_grid1D{ nullptr },
-      m_A{nullptr},
-      m_Q{nullptr}
+  //    m_grid1D{ nullptr },
+      m_A{aStateVec.first},
+      m_Q{aStateVec.second}
     {}
     bool reset( const gridLattice1DPtr& aGrid2Reset);
     /**
@@ -99,8 +99,8 @@ namespace vsc19
      * @brief finite difference grid
      * @return grid lattice
     */
-		gridLattice1D& grid()             { return *m_grid1D; }
-		const gridLattice1D& grid() const { return *m_grid1D; }
+		// gridLattice1D& grid()             { return *m_grid1D; }
+		// const gridLattice1D& grid() const { return *m_grid1D; }
 		/**
 		 * @brief A-component grid point values
 		 * @return array of values
@@ -164,7 +164,7 @@ namespace vsc19
   private:
     std::string m_name;         /**< field name*/
     std::string m_gridPrms;     /**< grid parameters*/
-    gridLattice1DPtr m_grid1D;  /**< grid lattice*/
+//    gridLattice1DPtr m_grid1D;  /**< grid lattice*/
     fieldLatticePtr m_A;        /**< A-component*/
     fieldLatticePtr m_Q;        /**< Q-component*/
   };

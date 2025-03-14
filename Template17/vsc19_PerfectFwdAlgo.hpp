@@ -2,6 +2,8 @@
 
 // C++ 20 range library
 #include <ranges>
+// project
+#include "../vs19_AppConstant.hpp" // metaprogramming constant
 
 namespace vsc19 
 {
@@ -81,4 +83,21 @@ namespace vsc19
            TreatmentSrcTerms(std::forward<decltype(aFwdAlgo)>(aFwdAlgo)...);
         }
     }
+
+  /**
+   * @brief
+   * @tparam ...Args
+   * @param ...args
+  */
+  template<typename... Args>
+  void hllFluxAlgorithmFwd(Args&&... args) // use forward reference (preserve type constness)
+  {                                         // for perfect forwarding to the right function
+    // Anthony Williams "C++ Concurrency" Appendix A give an introduction
+    // about variadic template and the perfect forwarding feature
+
+    // perfect forwarding preserve lvalue/rvalue-ness (forward to right function)
+  //  hllFluxAlgorithm(std::forward<Args>(args)...); // call forward once for all arguments
+    // look at N. Josuttis book move semantic page 145
+  //  hllFluxAlgorithm(std::forward<Args>(args)...); // not the same thing, call forward for each argument
+  }
 } //End of namespace

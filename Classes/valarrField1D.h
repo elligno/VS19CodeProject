@@ -21,7 +21,7 @@ namespace vsc19
 	 *    std valarray support modern C++ move semantic as well math operation supported 
 	 *    by such a function. 
 	 */
-    class scalarField1D
+    class scalarField1D final
     {
 		public:
 		    using valarraydbl = std::valarray<double>;
@@ -83,7 +83,7 @@ namespace vsc19
 				m_gridPointValues.reset(new std::valarray<double>(std::ranges::data(aInitValues), (*m_gridLattice).getDivisions()));
 				// initialize the field with initial values
 			//	std::copy( std::ranges::begin(aInitValues), std::ranges::end(aInitValues), std::ranges::begin(*m_gridPointValues));
-				std::ranges::copy(aInitValues, std::ranges::begin(*m_gridPointValues));
+				//std::ranges::copy(aInitValues, std::ranges::begin(*m_gridPointValues));
 			}
 			/**
 		     * @brief Enable access to grid-point values
@@ -129,7 +129,7 @@ namespace vsc19
 			 *   Template function that requires a RegularInvocable.
 			 *
 			 * @return Returns a new array of the same size with values
-			 *   which are acquired by applying function func.
+			 *   which are acquired by applying function 'func'.
 			 */
             template <std::regular_invocable<float64> Func>
 			valarraydbl apply(Func&& aCallable) const 
@@ -200,7 +200,7 @@ namespace vsc19
 			{
 				// return std::vector<double>(std::begin(values()),std::end(values()));
 				return std::vector<double>(&(*m_gridPointValues)[0], &(*m_gridPointValues)[0] + (*m_gridPointValues).size());
-		 }
+		    }
 
             // template<typename Rng> // range
 			// scalarField1D::scalarField1D( const std::shared_ptr<gridLattice1D>& aGrid, 
@@ -229,6 +229,13 @@ namespace vsc19
 		 */
 		[[nodiscard]] bool isEmpty() noexcept { return (*m_gridPointValues).size() == 0; }
 
+		/**
+		 * @brief Field values extent
+		 *
+		 * @return size of the field
+		 */
+		size_t size() const { return (*m_gridPointValues).size(); }
+
 	private:
         std::shared_ptr<gridLattice1D> m_gridLattice;     /**< shared grid*/
         std::shared_ptr<valarraydbl>   m_gridPointValues; /**< shared array (point values)*/
@@ -247,4 +254,44 @@ namespace vsc19
 	scalarField1D operator- (double aDbl, const scalarField1D& aF1);
 	scalarField1D operator* (const scalarField1D& aF1, double aDbl);
 	scalarField1D operator* (double aDbl, const scalarField1D& aF1);
- } // End of namespace
+} // End of namespace
+
+#if 0  // o = printValarray
+	/**
+     * @brief Printing element of container or a scalar 
+     * @param rem ...
+     * @param aVector type value to print
+     * @param newline return end of line 
+    */
+   void printValarray( std::string_view rem, // cheap to copy
+    const auto& aType2Print, bool newline = false)
+  {
+    // check if its a scalar by using type trait 
+    if constexpr( std::is_scalar_v<std::decay_t<decltype(aType2Print)>>)
+      std::cout << rem << " : " << aType2Print;
+    else // otherwise its a container
+    {
+      for( std::cout << rem << " : { "; const auto vecElem : aType2Print)
+        std::cout << vecElem << ' ';
+      std::cout << '}';
+    }
+    std::cout << (newline ? "\n" : ";  ");
+  }
+
+  int main()
+  {
+    std::valarray<int> x, y;
+
+    o("x", x = { 1, 2, 3, 4 }), o("y", y = { 4, 3, 2, 1 }), o("x += y", x += y, 1);
+    o("x", x = { 4, 3, 2, 1 }), o("y", y = { 3, 2, 1, 0 }), o("x -= y", x -= y, 1);
+    o("x", x = { 1, 2, 3, 4 }), o("y", y = { 5, 4, 3, 2 }), o("x *= y", x *= y, 1);
+    o("x", x = { 1, 3, 4, 7 }), o("y", y = { 1, 1, 3, 5 }), o("x &= y", x &= y, 1);
+    o("x", x = { 0, 1, 2, 4 }), o("y", y = { 4, 3, 2, 1 }), o("x <<=y", x <<= y, 1);
+
+    std::cout << '\n';
+
+    o("x", x = { 1, 2, 3, 4 }), o("x += 5", x += 5, 1);
+    o("x", x = { 1, 2, 3, 4 }), o("x *= 2", x *= 2, 1);
+    o("x", x = { 8, 6, 4, 2 }), o("x /= 2", x /= 2, 1);
+    o("x", x = { 8, 4, 2, 1 }), o("x >>=1", x >>= 1, 1);
+#endif
